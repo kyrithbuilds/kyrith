@@ -1,4 +1,5 @@
-# FTP deploy. Uploads to ./public_html/ inside THIS user's home only (see cPanel Path column).
+# FTP deploy. Uploads into THIS user's FTP root (whatever cPanel shows as their Path — you land there on login).
+# Site → ./   API → ./api/
 #
 # Secrets (must match cPanel → FTP Accounts → Manual Settings exactly):
 #   FTP_SERVER=ftp.kyrithbuilds.com
@@ -49,7 +50,7 @@ jobs:
           path: backend/api/
           retention-days: 14
 
-      - name: FTP — site → public_html
+      - name: FTP — site → FTP root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -59,9 +60,9 @@ jobs:
           port: 21
           security: loose
           local-dir: ./dist/
-          server-dir: ./public_html/
+          server-dir: ./
 
-      - name: FTP — API → public_html/api
+      - name: FTP — API → api/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -71,4 +72,4 @@ jobs:
           port: 21
           security: loose
           local-dir: ./backend/api/
-          server-dir: ./public_html/api/
+          server-dir: ./api/
