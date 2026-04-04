@@ -1,0 +1,96 @@
+# Deploy built site + PHP API to shared hosting over FTP (e.g. Hosting India / cPanel).
+#
+# GitHub → repo → Settings → Secrets and variables → Actions → Secrets:
+#   FTP_SERVER   (e.g. ftp.yourdomain.com)
+#   FTP_USERNAME
+#   FTP_PASSWORD
+#
+# Optional Variables: FTP_PROTOCOL (ftps), FTP_PORT (default 21), FTP_SECURITY (loose|strict)
+#
+# Upload target: ./public_html/ relative to your FTP account home. If files land in a nested
+# folder, move them in cPanel File Manager to the real domain public_html.
+
+name: Deploy FTP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ftp
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Upload build artifacts (backup if FTP fails)
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist/
+          retention-days: 14
+
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-api
+          path: backend/api/
+          retention-days: 14
+
+  deploy-ftp:
+    name: Upload to hosting (FTP)
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      FTP_PROTOCOL: ${{ vars.FTP_PROTOCOL != '' && vars.FTP_PROTOCOL || 'ftp' }}
+      FTP_PORT: ${{ vars.FTP_PORT != '' && vars.FTP_PORT || '21' }}
+      FTP_SECURITY: ${{ vars.FTP_SECURITY != '' && vars.FTP_SECURITY || 'loose' }}
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist
+
+      - name: Download API
+        uses: actions/download-artifact@v4
+        with:
+          name: site-api
+          path: backend/api
+
+      - name: FTP — site → public_html
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ env.FTP_PROTOCOL }}
+          port: ${{ env.FTP_PORT }}
+          security: ${{ env.FTP_SECURITY }}
+          local-dir: ./dist/
+          server-dir: ./public_html/
+
+      - name: FTP — API → public_html/api
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ env.FTP_PROTOCOL }}
+          port: ${{ env.FTP_PORT }}
+          security: ${{ env.FTP_SECURITY }}
+          local-dir: ./backend/api/
+          server-dir: ./public_html/api/

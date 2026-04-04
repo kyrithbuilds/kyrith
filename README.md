@@ -17,6 +17,21 @@ npm run build
 
 Output: `dist/` — upload contents to your host’s web root when you deploy.
 
+## Deploy with GitHub Actions (FTP — Hosting India / cPanel)
+
+1. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**
+   - **`FTP_SERVER`** — from cPanel → *FTP Accounts* → *Configure FTP Client* (e.g. `ftp.yourdomain.com`)
+   - **`FTP_USERNAME`** — full FTP username (e.g. `user@yourdomain.com`)
+   - **`FTP_PASSWORD`** — that FTP user’s password
+
+2. Push to **`main`** (or run **Actions → Deploy FTP → Run workflow**). The **Build** job uploads **artifacts**; **Upload to hosting (FTP)** syncs `dist/` and `backend/api/` to **`public_html/`** (relative to the FTP account).
+
+3. If the live site does not update, files may be under a **nested** `public_html` in File Manager — move `index.html`, `assets/`, `.htaccess`, and `api/` into your real domain **`public_html`**.
+
+4. If you see **`421 Home directory not available`**, the FTP account’s home path on the server is wrong — recreate the FTP user in cPanel or ask the host to fix it. Until then, download **`site-dist`** / **`site-api`** from the successful **Build** job and upload manually.
+
+Optional **Variables** (same Settings page, *Variables* tab): **`FTP_PROTOCOL`**=`ftps`, **`FTP_PORT`**, **`FTP_SECURITY`**.
+
 ## Layout
 
 - `src/` — React app (`pages/Home.jsx`, `layouts/`, `components/`, `api/`)
