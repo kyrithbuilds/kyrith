@@ -32,6 +32,18 @@ Output: `dist/` — upload contents to your host’s web root when you deploy.
 
 Optional **Variables** (same Settings page, *Variables* tab): **`FTP_PROTOCOL`**=`ftps`, **`FTP_PORT`**, **`FTP_SECURITY`**.
 
+### Do you have to delete everything and re-upload every time?
+
+**No.** Technology absolutely supports automation:
+
+| Approach | What you do |
+|----------|-------------|
+| **Full automation** | Fix the FTP account so **421** stops (recreate user in cPanel with a valid home directory). Then **`git push`** → **Deploy FTP** uploads only what changed — no manual steps. |
+| **Semi-automation (today)** | **`git push`** → Actions **Build** succeeds → download **`site-dist`** zip → in File Manager **upload/overwrite** (you do **not** need to delete every file first; replace `index.html`, `assets/`, etc.). One zip, not file-by-file from scratch. |
+| **Local build** | **`npm run build`** → upload **`dist/`** contents the same way (overwrite, not delete-all). |
+
+The blocker is **not** “there is no tech for this.” It’s that **your host’s FTP login is rejecting the session (421)** from GitHub’s servers until that account is fixed. After that, the workflow you already have is the automation.
+
 ## Layout
 
 - `src/` — React app (`pages/Home.jsx`, `layouts/`, `components/`, `api/`)
