@@ -30,7 +30,7 @@ Output: `dist/` — upload contents to your host’s web root when you deploy.
 
 4. If you see **`421 Home directory not available`**, the FTP account’s home path on the server is wrong — recreate the FTP user in cPanel or ask the host to fix it. Until then, download **`site-dist`** / **`site-api`** from the successful **Build** job and upload manually.
 
-Optional **Variables** (same Settings page, *Variables* tab): **`FTP_PROTOCOL`**=`ftps`, **`FTP_PORT`**, **`FTP_SECURITY`**.
+Deploy workflow uses **plain FTP on port 21** in YAML (no repo Variables required). If you added **`FTP_PROTOCOL` / `FTP_PORT`** variables earlier, **delete them** — wrong FTPS settings often break what used to work.
 
 ### Do you have to delete everything and re-upload every time?
 
