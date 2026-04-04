@@ -1,0 +1,15 @@
+# KyrithBuilds — shared hosting (Apache / cPanel)
+# Copied to /dist on `npm run build` — upload with the rest of the frontend.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve real files and folders as-is (includes /api/contact.php and /assets/*)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # React Router (client-side routes) → SPA shell
+  RewriteRule . /index.html [L]
+</IfModule>
