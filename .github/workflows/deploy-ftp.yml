@@ -1,10 +1,11 @@
-# Single job: build then FTP (same shape as the first setup that uploaded successfully).
-# Target: ./public_html/ relative to FTP home only — do not use ../ paths in server-dir.
+# FTP deploy. Uploads to ./public_html/ inside THIS user's home only (see cPanel Path column).
 #
-# Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
+# Secrets (must match cPanel → FTP Accounts → Manual Settings exactly):
+#   FTP_SERVER=ftp.kyrithbuilds.com
+#   FTP_USERNAME=tirth@kyrithbuilds.com
+#   FTP_PASSWORD=<that account's password>
 #
-# If deploy fails after you set GitHub Variables for FTP_PROTOCOL/FTP_PORT, remove those
-# variables so plain FTP on 21 is used (wrong FTPS settings can look like “random” failures).
+# Optional Variable: USE_EXPLICIT_FTPS = true  (cPanel lists "FTP & explicit FTPS" on port 21)
 
 name: Deploy FTP
 
@@ -20,6 +21,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      FTP_PROTOCOL: ${{ vars.USE_EXPLICIT_FTPS == 'true' && 'ftps' || 'ftp' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,7 +55,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
           local-dir: ./dist/
@@ -64,7 +67,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
           local-dir: ./backend/api/

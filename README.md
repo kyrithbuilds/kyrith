@@ -19,30 +19,54 @@ Output: `dist/` — upload contents to your host’s web root when you deploy.
 
 ## Deploy with GitHub Actions (FTP — Hosting India / cPanel)
 
-1. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**
-   - **`FTP_SERVER`** — from cPanel → *FTP Accounts* → *Configure FTP Client* (e.g. `ftp.yourdomain.com`)
-   - **`FTP_USERNAME`** — full FTP username (e.g. `user@yourdomain.com`)
-   - **`FTP_PASSWORD`** — that FTP user’s password
+### What your cPanel screenshot confirms
 
-2. Push to **`main`** (or run **Actions → Deploy FTP → Run workflow**). The **Build** job uploads **artifacts**; **Upload to hosting (FTP)** syncs `dist/` and `backend/api/` to **`public_html/`** (relative to the FTP account).
+| Field | Exact value to use |
+|--------|---------------------|
+| **FTP server** | `ftp.kyrithbuilds.com` |
+| **FTP username** | `tirth@kyrithbuilds.com` |
+| **Port** | `21` (FTP and explicit FTPS) |
+| **This user’s root on the server** | The **Path** column (truncated as `…/tirth`) — that folder **must exist on disk**. The action uploads to **`public_html/` inside that folder only** (not your main account `public_html` unless this user’s home is pointed there). |
 
-3. If the live site does not update, files may be under a **nested** `public_html` in File Manager — move `index.html`, `assets/`, `.htaccess`, and `api/` into your real domain **`public_html`**.
+### GitHub Secrets (character-for-character)
 
-4. If you see **`421 Home directory not available`**, the FTP account’s home path on the server is wrong — recreate the FTP user in cPanel or ask the host to fix it. Until then, download **`site-dist`** / **`site-api`** from the successful **Build** job and upload manually.
+Repo → **Settings → Secrets and variables → Actions → Secrets**:
 
-Deploy workflow uses **plain FTP on port 21** in YAML (no repo Variables required). If you added **`FTP_PROTOCOL` / `FTP_PORT`** variables earlier, **delete them** — wrong FTPS settings often break what used to work.
+| Secret name | Value |
+|-------------|--------|
+| `FTP_SERVER` | `ftp.kyrithbuilds.com` |
+| `FTP_USERNAME` | `tirth@kyrithbuilds.com` |
+| `FTP_PASSWORD` | The current password for **that** FTP user (change in cPanel → *Change Password* if unsure, then update the secret). |
 
-### Do you have to delete everything and re-upload every time?
+No extra spaces, no `ftp://` prefix in `FTP_SERVER`.
 
-**No.** Technology absolutely supports automation:
+### Fix **`421 Home directory not available`** (exact order)
 
-| Approach | What you do |
-|----------|-------------|
-| **Full automation** | Fix the FTP account so **421** stops (recreate user in cPanel with a valid home directory). Then **`git push`** → **Deploy FTP** uploads only what changed — no manual steps. |
-| **Semi-automation (today)** | **`git push`** → Actions **Build** succeeds → download **`site-dist`** zip → in File Manager **upload/overwrite** (you do **not** need to delete every file first; replace `index.html`, `assets/`, etc.). One zip, not file-by-file from scratch. |
-| **Local build** | **`npm run build`** → upload **`dist/`** contents the same way (overwrite, not delete-all). |
+421 means: after login, the server cannot use this user’s **home directory** (missing folder, wrong path, or permissions). **Fix it in cPanel first** — the workflow cannot bypass that.
 
-The blocker is **not** “there is no tech for this.” It’s that **your host’s FTP login is rejecting the session (421)** from GitHub’s servers until that account is fixed. After that, the workflow you already have is the automation.
+1. **See the full home path**  
+   cPanel → **FTP Accounts** → next to `tirth@kyrithbuilds.com`, open **Configure FTP Client** or note the full **Path** (not truncated). Example shape: `/home/ACCOUNT/kyrithbuilds.com/tirth` (yours may differ).
+
+2. **File Manager**  
+   Navigate to that **exact** path.  
+   - **If the folder is missing or renamed** → that is why you get 421. **Create** the missing folder **or** edit the FTP account so its directory points to a folder that **already exists**.  
+   - **If it exists** → open it. Create **`public_html`** inside it if you want uploads there (the workflow expects `./public_html/` under this user’s home).
+
+3. **Recreate the FTP user (if step 2 doesn’t fix it)**  
+   **Delete** `tirth@kyrithbuilds.com` → **Add** a new FTP account with the same username (or a new one — then update `FTP_USERNAME` in GitHub), set **Directory** to a path you can see in File Manager, set password, update **`FTP_PASSWORD`** in GitHub.
+
+4. **Run deploy again**  
+   **Actions → Deploy FTP → Run workflow** (or push to `main`).
+
+5. **If it still fails with 421**  
+   cPanel says **explicit FTPS** also uses port **21**. Add a repository **Variable**: **`USE_EXPLICIT_FTPS`** = **`true`** (exactly), push or re-run workflow. That switches the action to **FTPS** on port 21.
+
+6. **Live site still wrong?**  
+   Your domain may use **`/home/…/public_html`** while this FTP user only writes under **`…/tirth/public_html`**. Move or copy files from **`tirth/public_html`** to the real **`public_html`** for the domain (or change the FTP account directory to **`public_html`** in cPanel if your host allows it).
+
+### After it works
+
+Every **`git push`** to **`main`** runs **Deploy FTP** and syncs the built site. If FTP is ever broken, the workflow still produces **Artifacts** (`site-dist`, `site-api`) for a one-shot upload.
 
 ## Layout
 
