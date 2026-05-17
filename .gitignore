@@ -10,7 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.deploy-api
 kyrithbuilds-upload.zip
+.env
+.env.*
+!.env.example
 *.local
 backend/api/config.local.php
 

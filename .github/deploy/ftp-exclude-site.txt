@@ -1,0 +1,13 @@
+# Site (dist/) sync — keep defaults + never touch server-only paths under web root
+**/.git*
+**/.git*/**
+**/node_modules/**
+api/**
+**/api/**
+**/config.local.php
+**/.env
+**/.env.*
+**/logs/**
+**/uploads/**
+**/mail/**
+**/*.log

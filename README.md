@@ -27,7 +27,43 @@ The production build calls **`/api/contact.php`** on the **same domain** only. N
 4. Test **`https://yourdomain.com`** and **`https://yourdomain.com/contact`**.  
    `public/.htaccess` is copied into `dist/` so routes like `/contact` work on Apache when a real file/folder (e.g. `/api/*`) doesn’t exist.
 
-## Deploy with GitHub Actions (FTP — Hosting India / cPanel)
+## Deploy with GitHub Actions (FTP — recommended)
+
+Every push to **`main`** runs **Deploy FTP**: build React → upload `dist/` + `api/` → live URL checks. Full audit: [`.github/DEPLOYMENT.md`](.github/DEPLOYMENT.md).
+
+### One-time GitHub setup
+
+**Secrets** (Settings → Secrets and variables → Actions → Secrets):
+
+| Secret | Example |
+|--------|---------|
+| `FTP_SERVER` | `ftp.kyrithbuilds.com` |
+| `FTP_USERNAME` | `tirth@kyrithbuilds.com` |
+| `FTP_PASSWORD` | Your FTP account password |
+
+**Variables** (optional):
+
+| Variable | Example | Use |
+|----------|---------|-----|
+| `FTP_SITE_DIR` | `public_html/` | When the live site is **not** at the FTP login root |
+| `USE_EXPLICIT_FTPS` | `true` | If plain FTP fails (FTPS on port 21) |
+| `DEPLOY_URL` | `https://kyrithbuilds.com` | Health-check base URL |
+
+### One-time server setup
+
+Upload **`api/config.local.php`** via cPanel (SendGrid). CI **never** deploys this file.
+
+### Automatic flow
+
+```text
+git push origin main
+  → npm ci && npm run build
+  → FTP upload dist/ to ${FTP_SITE_DIR}
+  → FTP upload api/ (contact.php, .htaccess, example config only)
+  → curl checks: /, /contact, /api/contact.php
+```
+
+Manual fallback: **`npm run pack-upload`** → upload zip to document root (see above).
 
 ### What your cPanel screenshot confirms
 
@@ -40,7 +76,7 @@ The production build calls **`/api/contact.php`** on the **same domain** only. N
 **What “path” means (you’re not missing a secret screen):**  
 **Configure FTP Client** only shows **Manual Settings** (host, user, port). The **folder on the server** is the **Path** column in the **same table row** as `tirth@kyrithbuilds.com` — in your screenshot it’s truncated (`/home/kyrith…ds.com/tirth`). That is **one real directory** on the server; when this user logs in via FTP, that directory is their **top level**. You can open the same place in **File Manager** by browsing under your account until you see the **`tirth`** folder (or whatever path cPanel assigned when the FTP user was created).
 
-**Deploy workflow:** uploads the built site into **that FTP top level** (`./`) and PHP API files into **`./api/`**. No extra `public_html` folder is required for the upload to succeed.
+**Deploy workflow:** uploads into **`FTP_SITE_DIR`** (default `./`, often set to **`public_html/`**). API files go to **`${FTP_SITE_DIR}api/`**.
 
 ### GitHub Secrets (character-for-character)
 

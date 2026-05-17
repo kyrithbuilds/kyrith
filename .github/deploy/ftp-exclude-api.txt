@@ -1,0 +1,8 @@
+# API sync — never upload or delete production secrets / server-only files
+**/config.local.php
+**/.env
+**/.env.*
+**/logs/**
+**/uploads/**
+**/mail/**
+**/*.log
