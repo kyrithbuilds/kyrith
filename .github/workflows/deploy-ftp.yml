@@ -1,21 +1,10 @@
-# Deploy KyrithBuilds to cPanel/shared hosting via FTP.
+# Deploy KyrithBuilds to cPanel (public_html) via FTPS.
 #
-# Secrets (Settings → Secrets and variables → Actions → Secrets):
-#   FTP_SERVER     — cPanel → FTP Accounts → Manual Settings → FTP server (e.g. ftp.kyrithbuilds.com)
-#   FTP_USERNAME   — FTP account username (e.g. tirth@kyrithbuilds.com)
-#   FTP_PASSWORD   — That FTP account password
+# Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
+# Variables (recommended): FTP_SITE_DIR=public_html/, USE_EXPLICIT_FTPS=true, DEPLOY_URL=https://kyrithbuilds.com
 #
-# Variables (Settings → Secrets and variables → Actions → Variables):
-#   USE_EXPLICIT_FTPS — optional; set to "true" for FTPS on port 21 if plain FTP fails
-#   FTP_SITE_DIR      — optional; FTP folder for the live site, trailing slash (default "./")
-#                       Use "public_html/" if the domain document root is public_html and
-#                       your FTP login is above that folder.
-#   DEPLOY_URL        — optional; base URL for post-deploy checks (default https://kyrithbuilds.com)
-#
-# Production layout after deploy (relative to FTP_SITE_DIR):
-#   index.html, assets/, .htaccess, robots.txt, sitemap.xml, …
-#   api/contact.php, api/.htaccess, api/config.local.example.php
-#   api/config.local.php — NEVER deployed; must exist on server only (upload once manually)
+# Uploads: dist/ → public_html/   |   deploy-api/ → public_html/api/
+# Never deploys: api/config.local.php
 
 name: Deploy FTP
 
@@ -34,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      FTP_PROTOCOL: ${{ vars.USE_EXPLICIT_FTPS == 'true' && 'ftps' || 'ftp' }}
+      # Default FTPS unless variable explicitly set to "false"
+      FTP_PROTOCOL: ${{ vars.USE_EXPLICIT_FTPS == 'false' && 'ftp' || 'ftps' }}
       DEPLOY_URL: ${{ vars.DEPLOY_URL || 'https://kyrithbuilds.com' }}
     steps:
       - name: Validate FTP secrets
@@ -68,8 +58,6 @@ jobs:
           cp backend/api/contact.php deploy-api/
           cp backend/api/.htaccess deploy-api/
           cp backend/api/config.local.example.php deploy-api/
-          echo "API bundle:"
-          ls -la deploy-api/
           test -f deploy-api/contact.php
           test -f deploy-api/.htaccess
           test -f deploy-api/config.local.example.php
@@ -78,7 +66,7 @@ jobs:
         id: paths
         run: |
           SITE_DIR="${{ vars.FTP_SITE_DIR }}"
-          SITE_DIR="${SITE_DIR:-./}"
+          SITE_DIR="${SITE_DIR:-public_html/}"
           case "$SITE_DIR" in
             */) ;;
             *) SITE_DIR="${SITE_DIR}/" ;;
@@ -105,40 +93,12 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-      # ============================================================================
-      # WARNING:
-      # This prints secrets to logs.
-      # Remove immediately after debugging.
-      # TEMPORARY DEBUG ONLY — REMOVE AFTER ONE RUN
-      # ============================================================================
-      - name: '[DEBUG] Print FTP configuration (REMOVE AFTER ONE RUN)'
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          USE_EXPLICIT_FTPS: ${{ vars.USE_EXPLICIT_FTPS }}
-          FTP_SITE_DIR: ${{ vars.FTP_SITE_DIR }}
-          DEPLOY_URL: ${{ vars.DEPLOY_URL }}
-        run: |
-          echo "FTP_SERVER: $FTP_SERVER"
-          echo "FTP_USERNAME: $FTP_USERNAME"
-          echo "FTP_PASSWORD: $FTP_PASSWORD"
-          echo "USE_EXPLICIT_FTPS: ${USE_EXPLICIT_FTPS:-}"
-          echo "FTP_SITE_DIR: ${FTP_SITE_DIR:-}"
-          echo "DEPLOY_URL: ${DEPLOY_URL:-}"
-
-      # ============================================================================
-      # WARNING:
-      # TEMPORARY HARDCODED CREDENTIALS FOR DEBUGGING
-      # REMOVE AFTER ONE TEST RUN
-      # REVERT BACK TO GITHUB SECRETS
-      # ============================================================================
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: "ftp.kyrithbuilds.com"
-          username: "tirth@kyrithbuilds.com"
-          password: "koinaijane@123"
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
@@ -161,13 +121,12 @@ jobs:
             **/mail/**
             **/*.log
 
-      # WARNING: TEMPORARY HARDCODED CREDENTIALS — REVERT TO secrets.* AFTER ONE RUN
       - name: FTP — API (bundle → api/, preserve config.local.php)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: "ftp.kyrithbuilds.com"
-          username: "tirth@kyrithbuilds.com"
-          password: "koinaijane@123"
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
@@ -241,13 +200,11 @@ jobs:
 
           if [ "$FAIL" -ne 0 ]; then
             echo ""
-            echo "::warning::FTP upload completed but live URL checks failed."
-            echo "Set repository variable FTP_SITE_DIR to public_html/ if files uploaded to the wrong folder."
-            echo "Ensure api/config.local.php exists on the server (never deployed by CI)."
-          else
-            echo ""
-            echo "All post-deploy checks passed."
+            echo "::warning::FTP upload completed but one or more live URL checks failed."
+            exit 1
           fi
+          echo ""
+          echo "All post-deploy checks passed."
 
       - name: Deployment summary
         if: always()
@@ -262,7 +219,4 @@ jobs:
           echo "- **contact:** $([ '${{ steps.health.outputs.contact_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **api:** $([ '${{ steps.health.outputs.api_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Secrets: \`FTP_SERVER\`, \`FTP_USERNAME\`, \`FTP_PASSWORD\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "Variables: \`FTP_SITE_DIR\`, \`USE_EXPLICIT_FTPS\`, \`DEPLOY_URL\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "\`api/config.local.php\` is never deployed — upload once via cPanel if missing." >> "$GITHUB_STEP_SUMMARY"
+          echo "\`api/config.local.php\` is never deployed by CI." >> "$GITHUB_STEP_SUMMARY"

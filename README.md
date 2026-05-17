@@ -27,95 +27,63 @@ The production build calls **`/api/contact.php`** on the **same domain** only. N
 4. Test **`https://yourdomain.com`** and **`https://yourdomain.com/contact`**.  
    `public/.htaccess` is copied into `dist/` so routes like `/contact` work on Apache when a real file/folder (e.g. `/api/*`) doesn’t exist.
 
-## Deploy with GitHub Actions (FTP — recommended)
+## Deploy with GitHub Actions (recommended)
 
-Every push to **`main`** runs **Deploy FTP**: build React → upload `dist/` + `api/` → live URL checks. Full audit: [`.github/DEPLOYMENT.md`](.github/DEPLOYMENT.md).
+Every push to **`main`** runs **Deploy FTP**: build → FTPS upload → live health checks.
 
-### One-time GitHub setup
+Details: [`.github/DEPLOYMENT.md`](.github/DEPLOYMENT.md)
+
+### Production FTP setup (verified)
+
+Create a dedicated FTP user in cPanel whose **directory is `public_html`** (same as the live site). Test with FileZilla before relying on CI.
+
+| Setting | Value |
+|---------|--------|
+| FTP server | `ftp.kyrithbuilds.com` |
+| FTP username | `githubdeploy@kyrithbuilds.com` (your deploy user) |
+| Port | `21` (explicit FTPS) |
+| Remote folder | `public_html` |
+
+### GitHub configuration
 
 **Secrets** (Settings → Secrets and variables → Actions → Secrets):
 
-| Secret | Example |
+| Secret | Purpose |
 |--------|---------|
-| `FTP_SERVER` | `ftp.kyrithbuilds.com` |
-| `FTP_USERNAME` | `tirth@kyrithbuilds.com` |
-| `FTP_PASSWORD` | Your FTP account password |
+| `FTP_SERVER` | e.g. `ftp.kyrithbuilds.com` (no `ftp://` prefix) |
+| `FTP_USERNAME` | Deploy FTP user, e.g. `githubdeploy@kyrithbuilds.com` |
+| `FTP_PASSWORD` | That account’s password |
 
-**Variables** (optional):
+**Variables** (recommended):
 
-| Variable | Example | Use |
-|----------|---------|-----|
-| `FTP_SITE_DIR` | `public_html/` | When the live site is **not** at the FTP login root |
-| `USE_EXPLICIT_FTPS` | `true` | If plain FTP fails (FTPS on port 21) |
-| `DEPLOY_URL` | `https://kyrithbuilds.com` | Health-check base URL |
+| Variable | Value |
+|----------|--------|
+| `FTP_SITE_DIR` | `public_html/` |
+| `USE_EXPLICIT_FTPS` | `true` |
+| `DEPLOY_URL` | `https://kyrithbuilds.com` |
 
-### One-time server setup
+Workflow defaults if variables are unset: `FTP_SITE_DIR` → `public_html/`, protocol → **FTPS**.
 
-Upload **`api/config.local.php`** via cPanel (SendGrid). CI **never** deploys this file.
+### What gets uploaded
+
+| Local | Remote |
+|-------|--------|
+| `dist/` | `public_html/` |
+| `deploy-api/` (contact.php, .htaccess, example only) | `public_html/api/` |
+
+**Not uploaded:** `api/config.local.php` (maintain on server only).
 
 ### Automatic flow
 
 ```text
 git push origin main
   → npm ci && npm run build
-  → FTP upload dist/ to ${FTP_SITE_DIR}
-  → FTP upload api/ (contact.php, .htaccess, example config only)
-  → curl checks: /, /contact, /api/contact.php
+  → FTPS: dist/ → public_html/
+  → FTPS: deploy-api/ → public_html/api/
+  → verify /, /contact, /api/contact.php
 ```
 
-Manual fallback: **`npm run pack-upload`** → upload zip to document root (see above).
-
-### What your cPanel screenshot confirms
-
-| Field | Exact value to use |
-|--------|---------------------|
-| **FTP server** | `ftp.kyrithbuilds.com` |
-| **FTP username** | `tirth@kyrithbuilds.com` |
-| **Port** | `21` (FTP and explicit FTPS) |
-
-**What “path” means (you’re not missing a secret screen):**  
-**Configure FTP Client** only shows **Manual Settings** (host, user, port). The **folder on the server** is the **Path** column in the **same table row** as `tirth@kyrithbuilds.com` — in your screenshot it’s truncated (`/home/kyrith…ds.com/tirth`). That is **one real directory** on the server; when this user logs in via FTP, that directory is their **top level**. You can open the same place in **File Manager** by browsing under your account until you see the **`tirth`** folder (or whatever path cPanel assigned when the FTP user was created).
-
-**Deploy workflow:** uploads into **`FTP_SITE_DIR`** (default `./`, often set to **`public_html/`**). API files go to **`${FTP_SITE_DIR}api/`**.
-
-### GitHub Secrets (character-for-character)
-
-Repo → **Settings → Secrets and variables → Actions → Secrets**:
-
-| Secret name | Value |
-|-------------|--------|
-| `FTP_SERVER` | `ftp.kyrithbuilds.com` |
-| `FTP_USERNAME` | `tirth@kyrithbuilds.com` |
-| `FTP_PASSWORD` | The current password for **that** FTP user (change in cPanel → *Change Password* if unsure, then update the secret). |
-
-No extra spaces, no `ftp://` prefix in `FTP_SERVER`.
-
-### Fix **`421 Home directory not available`** (exact order)
-
-421 means: after login, the server cannot use this user’s **home directory** (missing folder, wrong path, or permissions). **Fix it in cPanel first** — the workflow cannot bypass that.
-
-1. **Find that folder on disk**  
-   cPanel → **FTP Accounts** → read the **Path** column for `tirth@kyrithbuilds.com` (hover or widen the column if needed). Then **File Manager** → go to that folder (e.g. `…/tirth`).
-
-2. **Fix 421**  
-   - **If that folder is missing or renamed** → 421. **Create** it **or** change the FTP account’s directory to a folder that **already exists**.  
-   - **If it exists** → you’re done for path setup; deploy writes files **directly there** (and under **`api/`**).
-
-3. **Recreate the FTP user (if step 2 doesn’t fix it)**  
-   **Delete** `tirth@kyrithbuilds.com` → **Add** a new FTP account with the same username (or a new one — then update `FTP_USERNAME` in GitHub), set **Directory** to a path you can see in File Manager, set password, update **`FTP_PASSWORD`** in GitHub.
-
-4. **Run deploy again**  
-   **Actions → Deploy FTP → Run workflow** (or push to `main`).
-
-5. **If it still fails with 421**  
-   cPanel says **explicit FTPS** also uses port **21**. Add a repository **Variable**: **`USE_EXPLICIT_FTPS`** = **`true`** (exactly), push or re-run workflow. That switches the action to **FTPS** on port 21.
-
-6. **Live site still wrong?**  
-   The domain’s **document root** might be **`public_html`** for the main account while FTP only fills **`…/tirth/`**. In that case either point the FTP user at **`public_html`** when creating/editing the account (if cPanel allows), or copy/move the uploaded files from **`tirth/`** into the domain’s real web root.
-
-### After it works
-
-Every **`git push`** to **`main`** runs **Deploy FTP** and syncs the built site. If FTP is ever broken, the workflow still produces **Artifacts** (`site-dist`, `site-api`) for a one-shot upload.
+**Manual fallback:** `npm run pack-upload` → upload zip to `public_html` (see above).
 
 ## Layout
 
