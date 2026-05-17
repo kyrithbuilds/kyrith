@@ -29,9 +29,9 @@
 
 ```
 checkout → npm ci → npm run build
-→ stage .deploy-api/ (contact.php, .htaccess, config.local.example.php only)
+→ stage deploy-api/ (contact.php, .htaccess, config.local.example.php only)
 → FTP dist/ → ${FTP_SITE_DIR}
-→ FTP .deploy-api/ → ${FTP_SITE_DIR}api/
+→ FTP deploy-api/ → ${FTP_SITE_DIR}api/
 → curl health checks on /, /contact, /api/contact.php
 ```
 

@@ -62,13 +62,17 @@ jobs:
 
       - name: Prepare API deploy bundle (no secrets)
         run: |
-          rm -rf .deploy-api
-          mkdir -p .deploy-api
-          cp backend/api/contact.php .deploy-api/
-          cp backend/api/.htaccess .deploy-api/
-          cp backend/api/config.local.example.php .deploy-api/
+          set -euo pipefail
+          rm -rf deploy-api
+          mkdir -p deploy-api
+          cp backend/api/contact.php deploy-api/
+          cp backend/api/.htaccess deploy-api/
+          cp backend/api/config.local.example.php deploy-api/
           echo "API bundle:"
-          ls -la .deploy-api/
+          ls -la deploy-api/
+          test -f deploy-api/contact.php
+          test -f deploy-api/.htaccess
+          test -f deploy-api/config.local.example.php
 
       - name: Resolve FTP paths
         id: paths
@@ -97,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: site-api
-          path: .deploy-api/
+          path: deploy-api/
           retention-days: 14
           if-no-files-found: error
 
@@ -138,7 +142,7 @@ jobs:
           protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
-          local-dir: ./.deploy-api/
+          local-dir: ./deploy-api/
           server-dir: ${{ steps.paths.outputs.api_dir }}
           dangerous-clean-slate: false
           dry-run: false
