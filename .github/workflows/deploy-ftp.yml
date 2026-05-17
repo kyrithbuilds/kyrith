@@ -127,12 +127,18 @@ jobs:
           echo "FTP_SITE_DIR: ${FTP_SITE_DIR:-}"
           echo "DEPLOY_URL: ${DEPLOY_URL:-}"
 
+      # ============================================================================
+      # WARNING:
+      # TEMPORARY HARDCODED CREDENTIALS FOR DEBUGGING
+      # REMOVE AFTER ONE TEST RUN
+      # REVERT BACK TO GITHUB SECRETS
+      # ============================================================================
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          server: "ftp.kyrithbuilds.com"
+          username: "tirth@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
@@ -155,12 +161,13 @@ jobs:
             **/mail/**
             **/*.log
 
+      # WARNING: TEMPORARY HARDCODED CREDENTIALS — REVERT TO secrets.* AFTER ONE RUN
       - name: FTP — API (bundle → api/, preserve config.local.php)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          server: "ftp.kyrithbuilds.com"
+          username: "tirth@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ${{ env.FTP_PROTOCOL }}
           port: 21
           security: loose
