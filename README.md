@@ -17,6 +17,16 @@ npm run build
 
 Output: `dist/` — upload contents to your host’s web root when you deploy.
 
+### Go live (manual zip — no localhost in the built app)
+
+The production build calls **`/api/contact.php`** on the **same domain** only. Nothing points at `localhost` in the shipped JavaScript.
+
+1. **`npm run pack-upload`** → creates **`kyrithbuilds-upload.zip`** in the project root.
+2. cPanel **File Manager** → your domain’s **document root** (often `public_html`) → **Upload** the zip → **Extract** (you should see `index.html`, `assets/`, `.htaccess`, and folder **`api/`**).
+3. **Upload `api/config.local.php` separately** (never commit it). Copy from your PC’s `backend/api/config.local.php`. Same SendGrid values as local. Without this file, the contact form returns “not configured.”
+4. Test **`https://yourdomain.com`** and **`https://yourdomain.com/contact`**.  
+   `public/.htaccess` is copied into `dist/` so routes like `/contact` work on Apache when a real file/folder (e.g. `/api/*`) doesn’t exist.
+
 ## Deploy with GitHub Actions (FTP — Hosting India / cPanel)
 
 ### What your cPanel screenshot confirms

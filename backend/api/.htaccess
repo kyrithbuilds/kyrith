@@ -1,0 +1,4 @@
+# Block direct web access to local secrets (Apache). nginx ignores this file.
+<Files "config.local.php">
+  Require all denied
+</Files>

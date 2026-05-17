@@ -4,8 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "copy-favicons": "node scripts/copy-favicons.mjs",
+    "predev": "npm run copy-favicons",
+    "prebuild": "npm run copy-favicons",
     "dev": "vite",
+    "dev:with-php": "npm run copy-favicons && concurrently -k -n vite,php -c blue,magenta \"vite\" \"node scripts/php-server.mjs\"",
+    "start": "npm run dev:with-php",
     "build": "vite build",
+    "pack-upload": "vite build && node scripts/package-for-hosting.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -20,6 +26,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "archiver": "^7.0.1",
+    "concurrently": "^9.2.1",
     "autoprefixer": "^10.4.27",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",

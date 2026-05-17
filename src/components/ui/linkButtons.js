@@ -1,0 +1,5 @@
+export const primaryLinkClass =
+  'inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-secondary px-8 py-3.5 text-sm font-semibold text-white shadow-[0_10px_36px_-8px_rgba(65,114,244,0.55),0_4px_16px_-4px_rgba(2,29,65,0.14)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#3568E8] hover:shadow-[0_16px_48px_-10px_rgba(65,114,244,0.58),0_8px_24px_-8px_rgba(65,114,244,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 active:translate-y-0 sm:w-auto sm:min-w-[180px]'
+
+export const secondaryLinkClass =
+  'inline-flex min-h-[52px] w-full items-center justify-center rounded-xl border border-primary/[0.07] bg-white/50 px-8 py-3.5 text-sm font-medium text-primary/75 shadow-none backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/11 hover:bg-white/70 hover:text-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:ring-offset-2 active:translate-y-0 sm:w-auto sm:min-w-[168px]'

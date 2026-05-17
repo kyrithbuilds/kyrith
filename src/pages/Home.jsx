@@ -1,16 +1,24 @@
-import { useEffect } from 'react'
-import { testContactApi } from '../api/contact'
+import PageSEO from '../components/seo/PageSEO'
+import { PAGE_SEO } from '../config/site'
+import Hero from '../components/Hero'
+import TechStack from '../components/TechStack'
+import HomeCta from '../components/home/HomeCta'
+import HomeProof from '../components/home/HomeProof'
+import Process from '../components/home/Process'
+import WhatWeDo from '../components/home/WhatWeDo'
 
 export default function Home() {
-  useEffect(() => {
-    testContactApi().catch((err) => console.error('Contact API error:', err))
-  }, [])
+  const seo = PAGE_SEO.home
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center bg-neutral-50 px-4 py-8">
-      <p className="text-center text-lg text-neutral-600">
-        Website is being built
-      </p>
+    <main id="main-content" className="flex flex-1 flex-col">
+      <PageSEO title={seo.title} description={seo.description} path={seo.path} />
+      <Hero />
+      <HomeProof />
+      <WhatWeDo />
+      <TechStack />
+      <Process />
+      <HomeCta />
     </main>
   )
 }

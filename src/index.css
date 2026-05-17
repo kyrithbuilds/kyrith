@@ -1,1 +1,210 @@
 @import 'tailwindcss';
+@config '../tailwind.config.js';
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply min-h-screen overflow-x-hidden font-sans text-textPrimary antialiased;
+    background-color: #ffffff;
+    background-image: linear-gradient(
+      165deg,
+      #f5f8ff 0%,
+      #ffffff 42%,
+      #f0f4fc 88%,
+      #fafbff 100%
+    );
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold leading-tight tracking-tight text-textPrimary;
+  }
+
+  p {
+    @apply text-base leading-relaxed text-textSecondary;
+  }
+}
+
+@layer utilities {
+  @keyframes hero-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-hero-fade-up {
+    animation: hero-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-hero-delay-1 {
+    animation-delay: 0.09s;
+  }
+
+  .animate-hero-delay-2 {
+    animation-delay: 0.18s;
+  }
+
+  .animate-hero-delay-3 {
+    animation-delay: 0.27s;
+  }
+
+  @keyframes hero-blob-float {
+    0%,
+    100% {
+      transform: translateY(-50%) translateX(var(--blob-x, 0)) translateZ(0);
+    }
+    50% {
+      transform: translateY(calc(-50% - 14px)) translateX(var(--blob-x, 0)) translateZ(0);
+    }
+  }
+
+  .animate-hero-blob-float {
+    --blob-x: min(58%, 20rem);
+    animation: hero-blob-float 9s ease-in-out infinite;
+  }
+
+  @media (max-width: 639px) {
+    .animate-hero-blob-float {
+      --blob-x: min(38%, 10rem);
+    }
+  }
+
+  @media (min-width: 640px) {
+    .animate-hero-blob-float {
+      --blob-x: min(62%, 22rem);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .animate-hero-blob-float {
+      --blob-x: min(68%, 26rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-hero-fade-up {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .animate-hero-blob-float {
+      animation: none;
+    }
+  }
+
+  @keyframes about-hero-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-about-hero-float {
+    animation: about-hero-float 7s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-about-hero-float {
+      animation: none;
+    }
+  }
+
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  .reveal-on-scroll .process-line-inner {
+    transform: scaleX(0);
+    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-on-scroll.is-visible .process-line-inner {
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll .process-line-inner {
+      transform: scaleX(1);
+      transition: none;
+    }
+  }
+
+  @keyframes contact-success-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-contact-success-in {
+    animation: contact-success-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes contact-success-check-draw {
+    from {
+      stroke-dashoffset: 24;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .contact-success-check {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: contact-success-check-draw 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-contact-success-in {
+      animation: none;
+    }
+
+    .contact-success-check {
+      stroke-dashoffset: 0;
+      animation: none;
+    }
+  }
+}
