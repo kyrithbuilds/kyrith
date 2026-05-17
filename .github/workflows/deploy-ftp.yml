@@ -105,6 +105,89 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
+      # TEMPORARY — remove after FTP debugging (do not log secret values)
+      - name: '[DEBUG] FTP secret sanity + login test'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTOCOL: ${{ env.FTP_PROTOCOL }}
+        run: |
+          set -euo pipefail
+          echo "=== FTP debug (no secret values printed) ==="
+          echo "FTP_PROTOCOL: ${FTP_PROTOCOL}"
+          echo "FTP_SERVER length: ${#FTP_SERVER}"
+          echo "FTP_USERNAME length: ${#FTP_USERNAME}"
+          if [ -n "$FTP_PASSWORD" ]; then
+            echo "FTP_PASSWORD set: true"
+          else
+            echo "FTP_PASSWORD set: false"
+          fi
+          # Detect common misconfiguration without revealing values
+          case "$FTP_SERVER" in
+            ftp://*|ftps://*) echo "::warning::FTP_SERVER should not include a protocol prefix";;
+          esac
+          if [ "${FTP_SERVER: -1}" = " " ] || [ "${FTP_SERVER:0:1}" = " " ]; then
+            echo "::warning::FTP_SERVER may have leading/trailing whitespace"
+          fi
+          python3 <<'PY'
+          import os
+          import sys
+          import ftplib
+
+          protocol = os.environ.get("FTP_PROTOCOL", "ftp")
+          host = os.environ.get("FTP_SERVER", "").strip()
+          user = os.environ.get("FTP_USERNAME", "")
+          password = os.environ.get("FTP_PASSWORD", "")
+
+          for name, val in [("FTP_SERVER", host), ("FTP_USERNAME", user), ("FTP_PASSWORD", password)]:
+              if not val:
+                  print(f"::error::{name} is empty after trim")
+                  sys.exit(1)
+
+          if host.startswith("ftp://"):
+              host = host[6:]
+          if host.startswith("ftps://"):
+              host = host[7:]
+          host = host.strip("/")
+
+          print(f"Connecting to host (length {len(host)}) on port 21 using {protocol} ...")
+          try:
+              if protocol == "ftps":
+                  ftp = ftplib.FTP_TLS()
+                  ftp.connect(host, 21, timeout=45)
+                  ftp.auth()
+                  ftp.login(user, password)
+                  ftp.prot_p()
+              else:
+                  ftp = ftplib.FTP()
+                  ftp.connect(host, 21, timeout=45)
+                  ftp.login(user, password)
+              welcome = ftp.getwelcome() or "(no welcome message)"
+              # Welcome may contain host info; safe to log
+              print(f"FTP login: success")
+              print(f"Server welcome (first 120 chars): {welcome[:120]!r}")
+              try:
+                  names = ftp.nlst()[:10]
+                  print(f"NLST sample count: {len(names)} (listing up to 10 names, not printed)")
+              except Exception:
+                  print("NLST: skipped (not supported or permission denied)")
+              ftp.quit()
+          except ftplib.error_perm as e:
+              print(f"FTP login: failure (permission/auth)")
+              print(f"Error code/message: {e!s}"[:200])
+              sys.exit(1)
+          except OSError as e:
+              print(f"FTP login: failure (connection)")
+              print(f"Error: {type(e).__name__}: {e!s}"[:200])
+              sys.exit(1)
+          except Exception as e:
+              print(f"FTP login: failure (unexpected)")
+              print(f"Error: {type(e).__name__}: {e!s}"[:200])
+              sys.exit(1)
+          PY
+          echo "=== FTP debug complete ==="
+
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
