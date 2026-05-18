@@ -17,15 +17,19 @@ npm run build
 
 Output: `dist/` — upload contents to your host’s web root when you deploy.
 
-### Go live (manual zip — no localhost in the built app)
+### Go live (manual zip — recommended for now)
 
-The production build calls **`/api/contact.php`** on the **same domain** only. Nothing points at `localhost` in the shipped JavaScript.
+The production build calls **`/api/contact.php`** on the **same domain** only.
 
-1. **`npm run pack-upload`** → creates **`kyrithbuilds-upload.zip`** in the project root.
-2. cPanel **File Manager** → your domain’s **document root** (often `public_html`) → **Upload** the zip → **Extract** (you should see `index.html`, `assets/`, `.htaccess`, and folder **`api/`**).
-3. **Upload `api/config.local.php` separately** (never commit it). Copy from your PC’s `backend/api/config.local.php`. Same SendGrid values as local. Without this file, the contact form returns “not configured.”
-4. Test **`https://yourdomain.com`** and **`https://yourdomain.com/contact`**.  
-   `public/.htaccess` is copied into `dist/` so routes like `/contact` work on Apache when a real file/folder (e.g. `/api/*`) doesn’t exist.
+1. Ensure **`backend/api/config.local.php`** exists locally (copy from `config.local.example.php`, add SendGrid key). This file is gitignored but is **bundled into the zip** for email on the server.
+2. Run **`npm run pack-upload`** → creates **`kyrithbuilds-upload.zip`** (replaces any old zip).
+3. cPanel **File Manager** → **`public_html`** → **Upload** the zip → **Extract** (overwrite when prompted).
+4. Confirm after extract:
+   - `index.html`, `assets/`, `.htaccess`
+   - `api/contact.php`, `api/.htaccess`, **`api/config.local.php`**
+5. Test **`https://kyrithbuilds.com`** and submit the form on **`/contact`**.
+
+`public/.htaccess` is in `dist/` so client routes like `/contact` work on Apache.
 
 ## Deploy with GitHub Actions (recommended)
 
@@ -71,7 +75,7 @@ Workflow defaults if variables are unset: `FTP_SITE_DIR` → `public_html/`, pro
 | `dist/` | `public_html/` |
 | `deploy-api/` (contact.php, .htaccess, example only) | `public_html/api/` |
 
-**Not uploaded:** `api/config.local.php` (maintain on server only).
+**CI note:** GitHub Actions never deploys `config.local.php`. The **zip** includes it from your machine when you run `pack-upload`.
 
 ### Automatic flow
 
