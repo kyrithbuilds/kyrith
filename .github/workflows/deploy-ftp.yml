@@ -9,8 +9,7 @@
 name: Deploy FTP
 
 on:
-  push:
-    branches: [main]
+  # Push disabled while lftp connection test workflow is active (FTP-Deploy-Action)
   workflow_dispatch:
 
 concurrency:
