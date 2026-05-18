@@ -108,7 +108,7 @@ Secrets are read only in the deploy job. They are **not** printed in logs.
    - Port: `21`  
    - Encryption: **Explicit FTP over TLS**  
    - Logon type: Normal  
-3. Copy the **exact** host, username, and password into GitHub Secrets.
+4. Copy the **exact** host, username, and password into GitHub Secrets.
 
 ---
 
