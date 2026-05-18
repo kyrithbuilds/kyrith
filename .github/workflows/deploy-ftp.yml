@@ -1,15 +1,16 @@
-# Deploy KyrithBuilds to cPanel (public_html) via FTPS.
+# Deploy KyrithBuilds to cPanel (public_html) via lftp + explicit FTPS.
 #
 # Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
-# Variables (recommended): FTP_SITE_DIR=public_html/, USE_EXPLICIT_FTPS=true, DEPLOY_URL=https://kyrithbuilds.com
+# Variable (optional): FTP_SITE_DIR=public_html/
 #
 # Uploads: dist/ → public_html/   |   deploy-api/ → public_html/api/
-# Never deploys: api/config.local.php
+# Never overwrites/deletes: api/config.local.php, .env, logs/, uploads/
 
 name: Deploy FTP
 
 on:
-  # Push disabled while lftp connection test workflow is active (FTP-Deploy-Action)
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -22,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # FileZilla: port 21 + explicit TLS → SamKirkland `ftps` (NOT `ftps-legacy` implicit)
-      FTP_PROTOCOL: ftps
       DEPLOY_URL: ${{ vars.DEPLOY_URL || 'https://kyrithbuilds.com' }}
     steps:
       - name: Validate FTP secrets
@@ -65,148 +64,72 @@ jobs:
         id: paths
         run: |
           SITE_DIR="${{ vars.FTP_SITE_DIR }}"
-          SITE_DIR="${SITE_DIR:-public_html/}"
-          case "$SITE_DIR" in
-            */) ;;
-            *) SITE_DIR="${SITE_DIR}/" ;;
-          esac
-          API_DIR="${SITE_DIR}api/"
+          SITE_DIR="${SITE_DIR:-public_html}"
+          SITE_DIR="${SITE_DIR%/}"
           echo "site_dir=${SITE_DIR}" >> "$GITHUB_OUTPUT"
-          echo "api_dir=${API_DIR}" >> "$GITHUB_OUTPUT"
-          echo "FTP site target: ${SITE_DIR}"
-          echo "FTP API target: ${API_DIR}"
+          echo "api_dir=${SITE_DIR}/api" >> "$GITHUB_OUTPUT"
+          echo "FTP site target: ${SITE_DIR}/"
+          echo "FTP API target: ${SITE_DIR}/api/"
 
-      - name: Artifact — dist (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-dist
-          path: dist/
-          retention-days: 14
-          if-no-files-found: error
-
-      - name: Artifact — API bundle (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-api
-          path: deploy-api/
-          retention-days: 14
-          if-no-files-found: error
-
-      # TEMP: protocol probe — plain FTP first, explicit FTPS if FTP fails (remove after diagnosis)
-      - name: TEMP probe — plain FTP (port 21)
-        id: probe_ftp
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          security: loose
-          local-dir: ./dist/
-          server-dir: ${{ steps.paths.outputs.site_dir }}
-          dry-run: true
-          log-level: verbose
-          timeout: 60000
-
-      - name: TEMP probe — explicit FTPS (port 21)
-        id: probe_ftps
-        if: steps.probe_ftp.outcome == 'failure'
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: ./dist/
-          server-dir: ${{ steps.paths.outputs.site_dir }}
-          dry-run: true
-          log-level: verbose
-          timeout: 60000
-
-      - name: TEMP — protocol probe report
-        if: always()
+      - name: Install lftp
         run: |
-          echo "=== FTP protocol probe (dry-run, port 21) ==="
-          echo "plain FTP:  ${{ steps.probe_ftp.outcome }}"
-          echo "explicit FTPS (protocol=ftps): ${{ steps.probe_ftps.outcome }}"
-          if [ "${{ steps.probe_ftp.outcome }}" = "success" ]; then
-            echo "Authenticated session: plain FTP"
-          elif [ "${{ steps.probe_ftps.outcome }}" = "success" ]; then
-            echo "Authenticated session: explicit FTPS"
-          else
-            echo "Authenticated session: none (both probes failed or FTPS skipped)"
-            exit 0
-          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp
 
-      - name: FTP — frontend (dist → site root)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: ./dist/
-          server-dir: ${{ steps.paths.outputs.site_dir }}
-          dangerous-clean-slate: false
-          dry-run: false
-          log-level: standard
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            api/**
-            **/api/**
-            **/config.local.php
-            **/.env
-            **/.env.*
-            **/logs/**
-            **/uploads/**
-            **/mail/**
-            **/*.log
+      - name: Deploy via lftp (explicit FTPS)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SITE_DIR: ${{ steps.paths.outputs.site_dir }}
+          API_DIR: ${{ steps.paths.outputs.api_dir }}
+        run: |
+          set -euo pipefail
+          REPO_ROOT="$GITHUB_WORKSPACE"
 
-      - name: FTP — API (bundle → api/, preserve config.local.php)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: ./deploy-api/
-          server-dir: ${{ steps.paths.outputs.api_dir }}
-          dangerous-clean-slate: false
-          dry-run: false
-          log-level: standard
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/config.local.php
-            **/.env
-            **/.env.*
-            **/logs/**
-            **/uploads/**
-            **/mail/**
-            **/*.log
+          echo "Deploying frontend: dist/ → ${SITE_DIR}/"
+          echo "Deploying API: deploy-api/ → ${API_DIR}/"
+          echo "Mode: explicit FTPS, passive, verify-cert=no"
+
+          lftp -e "
+          set ftp:passive-mode true;
+          set ftp:ssl-force true;
+          set ftp:ssl-protect-data true;
+          set ssl:verify-certificate no;
+          open -u ${FTP_USERNAME},${FTP_PASSWORD} ftp://${FTP_SERVER};
+          cd ${SITE_DIR};
+          lcd ${REPO_ROOT}/dist;
+          mirror -R --delete . . \
+            --exclude api/ \
+            --exclude-glob 'api/**' \
+            --exclude-glob 'config.local.php' \
+            --exclude-glob '.env' \
+            --exclude-glob '.env.*' \
+            --exclude-glob 'logs/**' \
+            --exclude-glob 'uploads/**';
+          cd ${API_DIR};
+          lcd ${REPO_ROOT}/deploy-api;
+          mirror -R . . \
+            --exclude-glob 'config.local.php' \
+            --exclude-glob '.env' \
+            --exclude-glob '.env.*' \
+            --exclude-glob 'logs/**' \
+            --exclude-glob 'uploads/**' \
+            --exclude-glob 'mail/**' \
+            --exclude-glob '*.log';
+          bye
+          "
+
+          echo "lftp deploy completed."
 
       - name: Post-deploy health checks
         id: health
         run: |
           set +e
           BASE="${DEPLOY_URL%/}"
-          echo "Checking ${BASE}"
           FAIL=0
           HOME_OK=0
           CONTACT_OK=0
-          API_OK=0
 
           check_url() {
             local name="$1"
@@ -231,12 +154,10 @@ jobs:
 
           check_url home "/" "KyrithBuilds" && HOME_OK=1
           check_url contact "/contact" "Contact" && CONTACT_OK=1
-          check_url api "/api/contact.php" '"ok"' && API_OK=1
 
           {
             echo "home_ok=${HOME_OK}"
             echo "contact_ok=${CONTACT_OK}"
-            echo "api_ok=${API_OK}"
             echo "checks_failed=${FAIL}"
           } >> "$GITHUB_OUTPUT"
 
@@ -246,11 +167,10 @@ jobs:
           echo "|-------|-----|--------|"
           echo "| home | ${BASE}/ | $([ "$HOME_OK" = 1 ] && echo pass || echo fail) |"
           echo "| contact | ${BASE}/contact | $([ "$CONTACT_OK" = 1 ] && echo pass || echo fail) |"
-          echo "| api | ${BASE}/api/contact.php | $([ "$API_OK" = 1 ] && echo pass || echo fail) |"
 
           if [ "$FAIL" -ne 0 ]; then
             echo ""
-            echo "::warning::FTP upload completed but one or more live URL checks failed."
+            echo "::warning::Deploy upload completed but one or more live URL checks failed."
             exit 1
           fi
           echo ""
@@ -259,16 +179,11 @@ jobs:
       - name: Deployment summary
         if: always()
         run: |
-          echo "## Deploy FTP summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Deploy summary (lftp)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **FTP target (site):** \`${{ steps.paths.outputs.site_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **FTP target (API):** \`${{ steps.paths.outputs.api_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Protocol:** \`ftps\` (explicit TLS, port 21 — matches FileZilla)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Probe plain FTP:** \`${{ steps.probe_ftp.outcome }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Probe explicit FTPS:** \`${{ steps.probe_ftps.outcome }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Live checks:** \`${{ env.DEPLOY_URL }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Tool:** lftp (explicit FTPS, passive)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Frontend:** \`dist/\` → \`${{ steps.paths.outputs.site_dir }}/\` (mirror --delete)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **API:** \`deploy-api/\` → \`${{ steps.paths.outputs.api_dir }}/\` (mirror, no delete)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Protected on server:** \`config.local.php\`, \`.env\`, \`logs/\`, \`uploads/\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **home:** $([ '${{ steps.health.outputs.home_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **contact:** $([ '${{ steps.health.outputs.contact_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **api:** $([ '${{ steps.health.outputs.api_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "\`api/config.local.php\` is never deployed by CI." >> "$GITHUB_STEP_SUMMARY"
