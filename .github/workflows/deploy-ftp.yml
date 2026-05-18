@@ -23,8 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # Default FTPS unless variable explicitly set to "false"
-      FTP_PROTOCOL: ${{ vars.USE_EXPLICIT_FTPS == 'false' && 'ftp' || 'ftps' }}
+      # FileZilla: port 21 + explicit TLS → SamKirkland `ftps` (NOT `ftps-legacy` implicit)
+      FTP_PROTOCOL: ftps
       DEPLOY_URL: ${{ vars.DEPLOY_URL || 'https://kyrithbuilds.com' }}
     steps:
       - name: Validate FTP secrets
@@ -93,32 +93,56 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-      # TEMP: secret resolution debug — remove after diagnosis (no raw password)
-      - name: TEMP — debug FTP secret resolution
-        run: |
-          set -euo pipefail
-          exists() { [ -n "${1:-}" ] && echo true || echo false; }
-          len() { printf '%s' "${1:-}" | wc -c | tr -d ' '; }
+      # TEMP: protocol probe — plain FTP first, explicit FTPS if FTP fails (remove after diagnosis)
+      - name: TEMP probe — plain FTP (port 21)
+        id: probe_ftp
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          security: loose
+          local-dir: ./dist/
+          server-dir: ${{ steps.paths.outputs.site_dir }}
+          dry-run: true
+          log-level: verbose
+          timeout: 60000
 
-          echo "FTP_SERVER exists: $(exists "$FTP_SERVER")"
-          echo "FTP_SERVER length: $(len "$FTP_SERVER")"
-          echo "FTP_USERNAME exists: $(exists "$FTP_USERNAME")"
-          echo "FTP_USERNAME length: $(len "$FTP_USERNAME")"
-          echo "FTP_PASSWORD exists: $(exists "$FTP_PASSWORD")"
-          echo "FTP_PASSWORD length: $(len "$FTP_PASSWORD")"
-          echo "USE_EXPLICIT_FTPS value: ${USE_EXPLICIT_FTPS:-<unset>}"
-          echo "FTP_PROTOCOL (resolved): ${FTP_PROTOCOL}"
-          echo "FTP_SITE_DIR value: ${FTP_SITE_DIR:-<unset>}"
-          echo "Expected username length (githubdeploy@kyrithbuilds.com): 28"
-          echo "Username hash:"
-          echo -n "$FTP_USERNAME" | sha256sum
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          USE_EXPLICIT_FTPS: ${{ vars.USE_EXPLICIT_FTPS }}
-          FTP_SITE_DIR: ${{ vars.FTP_SITE_DIR }}
-          FTP_PROTOCOL: ${{ env.FTP_PROTOCOL }}
+      - name: TEMP probe — explicit FTPS (port 21)
+        id: probe_ftps
+        if: steps.probe_ftp.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          local-dir: ./dist/
+          server-dir: ${{ steps.paths.outputs.site_dir }}
+          dry-run: true
+          log-level: verbose
+          timeout: 60000
+
+      - name: TEMP — protocol probe report
+        if: always()
+        run: |
+          echo "=== FTP protocol probe (dry-run, port 21) ==="
+          echo "plain FTP:  ${{ steps.probe_ftp.outcome }}"
+          echo "explicit FTPS (protocol=ftps): ${{ steps.probe_ftps.outcome }}"
+          if [ "${{ steps.probe_ftp.outcome }}" = "success" ]; then
+            echo "Authenticated session: plain FTP"
+          elif [ "${{ steps.probe_ftps.outcome }}" = "success" ]; then
+            echo "Authenticated session: explicit FTPS"
+          else
+            echo "Authenticated session: none (both probes failed or FTPS skipped)"
+            exit 0
+          fi
 
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
@@ -126,7 +150,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ env.FTP_PROTOCOL }}
+          protocol: ftps
           port: 21
           security: loose
           local-dir: ./dist/
@@ -154,7 +178,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ env.FTP_PROTOCOL }}
+          protocol: ftps
           port: 21
           security: loose
           local-dir: ./deploy-api/
@@ -240,7 +264,9 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- **FTP target (site):** \`${{ steps.paths.outputs.site_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **FTP target (API):** \`${{ steps.paths.outputs.api_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Protocol:** \`${{ env.FTP_PROTOCOL }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Protocol:** \`ftps\` (explicit TLS, port 21 — matches FileZilla)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Probe plain FTP:** \`${{ steps.probe_ftp.outcome }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Probe explicit FTPS:** \`${{ steps.probe_ftps.outcome }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Live checks:** \`${{ env.DEPLOY_URL }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **home:** $([ '${{ steps.health.outputs.home_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **contact:** $([ '${{ steps.health.outputs.contact_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
