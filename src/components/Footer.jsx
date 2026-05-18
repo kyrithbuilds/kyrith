@@ -128,8 +128,6 @@ export default function Footer() {
             >
               Terms of Service
             </Link>
-            <span className="hidden h-3 w-px bg-primary/15 sm:inline" aria-hidden />
-            <span className="text-sm text-textSecondary/75">Built with React + PHP</span>
           </div>
         </div>
       </Container>
