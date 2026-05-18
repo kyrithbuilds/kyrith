@@ -98,6 +98,8 @@ jobs:
           set ssl:verify-certificate no;
           open -u ${FTP_USERNAME},${FTP_PASSWORD} ftp://${FTP_SERVER};
           cd ${SITE_DIR};
+          # Vite hashes change each build; remove stale bundles so index.html cannot reference old JS
+          rm -rf assets;
           lcd ${REPO_ROOT}/dist;
           mirror -R --delete . . \
             --exclude api/ \
