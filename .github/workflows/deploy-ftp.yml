@@ -1,3 +1,7 @@
+# TEMP DEBUG ONLY
+# REMOVE IMMEDIATELY
+# NEVER LEAVE HARDCODED FTP CREDS IN REPO
+#
 # Deploy KyrithBuilds to cPanel (public_html) via FTPS.
 #
 # Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
@@ -34,9 +38,10 @@ jobs:
           if [ -z "$FTP_PASSWORD" ]; then echo "::error::Missing secret FTP_PASSWORD"; exit 1; fi
           echo "FTP secrets present."
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          # TEMP DEBUG ONLY — REMOVE IMMEDIATELY
+          FTP_SERVER: "ftp.kyrithbuilds.com"
+          FTP_USERNAME: "githubdeploy@kyrithbuilds.com"
+          FTP_PASSWORD: "koinaijane@123"
 
       - uses: actions/checkout@v4
 
@@ -99,9 +104,10 @@ jobs:
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          # TEMP DEBUG ONLY — REMOVE IMMEDIATELY — NEVER LEAVE HARDCODED FTP CREDS IN REPO
+          server: "ftp.kyrithbuilds.com"
+          username: "githubdeploy@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ftp
           port: 21
           security: loose
@@ -117,9 +123,10 @@ jobs:
         continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          # TEMP DEBUG ONLY — REMOVE IMMEDIATELY — NEVER LEAVE HARDCODED FTP CREDS IN REPO
+          server: "ftp.kyrithbuilds.com"
+          username: "githubdeploy@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ftps
           port: 21
           security: loose
@@ -147,9 +154,10 @@ jobs:
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          # TEMP DEBUG ONLY — REMOVE IMMEDIATELY — NEVER LEAVE HARDCODED FTP CREDS IN REPO
+          server: "ftp.kyrithbuilds.com"
+          username: "githubdeploy@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ftps
           port: 21
           security: loose
@@ -175,9 +183,10 @@ jobs:
       - name: FTP — API (bundle → api/, preserve config.local.php)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          # TEMP DEBUG ONLY — REMOVE IMMEDIATELY — NEVER LEAVE HARDCODED FTP CREDS IN REPO
+          server: "ftp.kyrithbuilds.com"
+          username: "githubdeploy@kyrithbuilds.com"
+          password: "koinaijane@123"
           protocol: ftps
           port: 21
           security: loose
