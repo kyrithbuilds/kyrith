@@ -43,11 +43,12 @@ jobs:
           echo ""
 
           set +e
-          lftp -u "${FTP_USER}","${FTP_PASS}" -e "
+          lftp -e "
+          set ftp:passive-mode true;
           set ftp:ssl-force true;
           set ftp:ssl-protect-data true;
           set ssl:verify-certificate no;
-          open ${FTP_HOST};
+          open -u ${FTP_USER},${FTP_PASS} ftp://${FTP_HOST};
           pwd;
           ls;
           bye
