@@ -153,7 +153,8 @@ jobs:
           }
 
           check_url home "/" "KyrithBuilds" && HOME_OK=1
-          check_url contact "/contact" "Contact" && CONTACT_OK=1
+          # SPA: /contact serves index.html (no "Contact" in static markup)
+          check_url contact "/contact" "KyrithBuilds" && CONTACT_OK=1
 
           {
             echo "home_ok=${HOME_OK}"
