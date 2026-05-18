@@ -93,6 +93,33 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
+      # TEMP: secret resolution debug — remove after diagnosis (no raw password)
+      - name: TEMP — debug FTP secret resolution
+        run: |
+          set -euo pipefail
+          exists() { [ -n "${1:-}" ] && echo true || echo false; }
+          len() { printf '%s' "${1:-}" | wc -c | tr -d ' '; }
+
+          echo "FTP_SERVER exists: $(exists "$FTP_SERVER")"
+          echo "FTP_SERVER length: $(len "$FTP_SERVER")"
+          echo "FTP_USERNAME exists: $(exists "$FTP_USERNAME")"
+          echo "FTP_USERNAME length: $(len "$FTP_USERNAME")"
+          echo "FTP_PASSWORD exists: $(exists "$FTP_PASSWORD")"
+          echo "FTP_PASSWORD length: $(len "$FTP_PASSWORD")"
+          echo "USE_EXPLICIT_FTPS value: ${USE_EXPLICIT_FTPS:-<unset>}"
+          echo "FTP_PROTOCOL (resolved): ${FTP_PROTOCOL}"
+          echo "FTP_SITE_DIR value: ${FTP_SITE_DIR:-<unset>}"
+          echo "Expected username length (githubdeploy@kyrithbuilds.com): 28"
+          echo "Username hash:"
+          echo -n "$FTP_USERNAME" | sha256sum
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          USE_EXPLICIT_FTPS: ${{ vars.USE_EXPLICIT_FTPS }}
+          FTP_SITE_DIR: ${{ vars.FTP_SITE_DIR }}
+          FTP_PROTOCOL: ${{ env.FTP_PROTOCOL }}
+
       - name: FTP — frontend (dist → site root)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
