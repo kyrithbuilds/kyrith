@@ -1,7 +1,7 @@
 # Deploy KyrithBuilds to cPanel (public_html) via lftp + explicit FTPS.
 #
 # Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
-# Variable (optional): FTP_SITE_DIR=public_html/
+# Variable (optional): FTP_SITE_DIR — use "." when FTP login root is already public_html (default)
 #
 # Uploads: dist/ → public_html/   |   deploy-api/ → public_html/api/
 # Never overwrites/deletes: api/config.local.php, .env, logs/, uploads/
@@ -63,13 +63,20 @@ jobs:
       - name: Resolve FTP paths
         id: paths
         run: |
+          # Deploy user (githubdeploy@) chroots to public_html — do not cd into public_html again.
           SITE_DIR="${{ vars.FTP_SITE_DIR }}"
-          SITE_DIR="${SITE_DIR:-public_html}"
+          SITE_DIR="${SITE_DIR:-.}"
           SITE_DIR="${SITE_DIR%/}"
+          if [ -z "$SITE_DIR" ]; then SITE_DIR="."; fi
+          if [ "$SITE_DIR" = "." ]; then
+            API_DIR="api"
+          else
+            API_DIR="${SITE_DIR}/api"
+          fi
           echo "site_dir=${SITE_DIR}" >> "$GITHUB_OUTPUT"
-          echo "api_dir=${SITE_DIR}/api" >> "$GITHUB_OUTPUT"
-          echo "FTP site target: ${SITE_DIR}/"
-          echo "FTP API target: ${SITE_DIR}/api/"
+          echo "api_dir=${API_DIR}" >> "$GITHUB_OUTPUT"
+          echo "FTP site target: ${SITE_DIR} (login root when '.')"
+          echo "FTP API target: ${API_DIR}"
 
       - name: Install lftp
         run: |
