@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import blobPng from '../assets/blob.png'
+import blobPng from '../assets/blob.webp'
 import Container from './ui/Container'
 import { CTA } from '../config/analytics'
 import WhatsAppCtaHint from './whatsapp/WhatsAppCtaHint'

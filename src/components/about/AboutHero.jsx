@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import aboutIllustration from '../../assets/about-hero-illustration.png'
+import aboutIllustration from '../../assets/about-hero-illustration.webp'
 import Container from '../ui/Container'
 import { primaryLinkClass, secondaryLinkClass } from '../ui/linkButtons'
 import { CTA } from '../../config/analytics'

@@ -18,16 +18,8 @@ const reassurance = [
   'Practical recommendations',
 ]
 
-function buildMessage({ project, company, timeline }) {
-  const sections = []
-  if (company.trim()) {
-    sections.push(`Company: ${company.trim()}`)
-  }
-  sections.push(project.trim())
-  if (timeline.trim()) {
-    sections.push(`Timeline or budget: ${timeline.trim()}`)
-  }
-  return sections.join('\n\n')
+function buildMessage({ project }) {
+  return project.trim()
 }
 
 export default function ContactHero() {
@@ -50,7 +42,7 @@ export default function ContactHero() {
         email,
         company,
         timeline,
-        message: buildMessage({ project, company, timeline }),
+        message: buildMessage({ project }),
       })
       setStatus('success')
       trackContactFormSubmit()

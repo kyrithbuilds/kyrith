@@ -58,8 +58,9 @@ $to = trim((string) ($config['mail_to'] ?? ''));
 $from = trim((string) ($config['mail_from'] ?? ''));
 $fromName = trim((string) ($config['mail_from_name'] ?? 'Website'));
 $visitorReplyTo = !empty($config['visitor_reply_to']);
+$templateId = trim((string) ($config['sendgrid_template_id'] ?? ''));
 
-if ($apiKey === '' || $to === '' || $from === '') {
+if ($apiKey === '' || $to === '' || $from === '' || $templateId === '') {
     http_response_code(503);
     echo json_encode(['error' => 'Mail configuration incomplete.']);
     exit;
@@ -97,45 +98,32 @@ if (strlen($message) < 10 || strlen($message) > 10000) {
     exit;
 }
 
-$subject = 'Contact form: ' . $name;
-$plain = "From: {$name}\nEmail: {$email}";
-if ($company !== '') {
-    $plain .= "\nCompany: {$company}";
-}
-if ($timeline !== '') {
-    $plain .= "\nTimeline or budget: {$timeline}";
-}
-$plain .= "\n\n{$message}";
-$esc = static function (string $s): string {
-    return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-};
-$html = '<p><strong>From:</strong> ' . $esc($name) . '</p>'
-    . '<p><strong>Email:</strong> ' . $esc($email) . '</p>';
-if ($company !== '') {
-    $html .= '<p><strong>Company:</strong> ' . $esc($company) . '</p>';
-}
-if ($timeline !== '') {
-    $html .= '<p><strong>Timeline or budget:</strong> ' . $esc($timeline) . '</p>';
-}
-$html .= '<p><strong>Project details:</strong></p><p>' . nl2br($esc($message)) . '</p>';
-
 $fromBlock = ['email' => $from];
 if ($fromName !== '') {
     $fromBlock['name'] = $fromName;
 }
 
+$templateData = [
+    'name'     => $name,
+    'email'    => $email,
+    'message'  => $message,
+];
+if ($company !== '') {
+    $templateData['company'] = $company;
+}
+if ($timeline !== '') {
+    $templateData['timeline'] = $timeline;
+}
+
 $personalization = [
-    'to' => [['email' => $to]],
-    'subject' => $subject,
+    'to'                  => [['email' => $to]],
+    'dynamic_template_data' => $templateData,
 ];
 
 $payload = [
     'personalizations' => [$personalization],
-    'from' => $fromBlock,
-    'content' => [
-        ['type' => 'text/plain', 'value' => $plain],
-        ['type' => 'text/html', 'value' => $html],
-    ],
+    'from'             => $fromBlock,
+    'template_id'      => $templateId,
 ];
 
 // Visitor Reply-To often breaks SendGrid unless that address is verified; keep off by default.

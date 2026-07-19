@@ -1,8 +1,8 @@
 /** WhatsApp and phone contact details (single source of truth). */
 export const WHATSAPP_NUMBERS = [
   {
-    display: '+91 70462 23231',
-    href: 'https://wa.me/917046223231',
+    display: '+91 70430 62606',
+    href: 'https://wa.me/917043062606',
     primary: true,
   },
   {

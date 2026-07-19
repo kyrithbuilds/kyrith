@@ -11,8 +11,9 @@
  */
 return [
     'sendgrid_api_key' => 'SG.your_sendgrid_api_key_here',
+    'sendgrid_template_id' => 'd-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // SendGrid Dynamic Template ID (starts with d-)
     'mail_to' => 'you@example.com',
     'mail_from' => 'info@kyrithbuilds.com',
     'mail_from_name' => 'KyrithBuilds',
-    'visitor_reply_to' => false,
+    'visitor_reply_to' => true, // Enables reply-to visitor email — requires domain authentication in SendGrid
 ];

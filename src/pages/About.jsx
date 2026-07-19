@@ -1,3 +1,4 @@
+import BreadcrumbStructuredData from '../components/seo/BreadcrumbStructuredData'
 import PageSEO from '../components/seo/PageSEO'
 import { PAGE_SEO } from '../config/site'
 import AboutBeliefs from '../components/about/AboutBeliefs'
@@ -14,6 +15,7 @@ export default function About() {
   return (
     <main id="main-content" className="flex flex-1 flex-col">
       <PageSEO title={seo.title} description={seo.description} path={seo.path} />
+      <BreadcrumbStructuredData path={seo.path} />
       <AboutHero />
       <AboutMission />
       <AboutBeliefs />

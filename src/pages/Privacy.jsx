@@ -1,4 +1,5 @@
 import LegalDocument, { LegalSection } from '../components/legal/LegalDocument'
+import BreadcrumbStructuredData from '../components/seo/BreadcrumbStructuredData'
 import PageSEO from '../components/seo/PageSEO'
 import { PAGE_SEO, SITE_EMAIL } from '../config/site'
 
@@ -10,6 +11,7 @@ export default function Privacy() {
   return (
     <>
       <PageSEO title={seo.title} description={seo.description} path={seo.path} />
+      <BreadcrumbStructuredData path={seo.path} />
       <LegalDocument
         title="Privacy Policy"
         intro="This policy explains how KyrithBuilds collects and uses information when you visit our website or contact us."

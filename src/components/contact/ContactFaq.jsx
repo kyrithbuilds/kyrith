@@ -1,29 +1,9 @@
 import { useState } from 'react'
+import { CONTACT_FAQS } from '../../config/faqs'
 import Container from '../ui/Container'
 import Section from '../ui/Section'
 
-const faqs = [
-  {
-    question: 'What happens after submitting?',
-    answer:
-      'We read your note, reply within 1 to 2 business days, and suggest a short call or async follow-up if it looks like a fit. No auto-spam sequences.',
-  },
-  {
-    question: 'Do you improve existing systems?',
-    answer:
-      'Yes. Many projects extend spreadsheets, SaaS tools, half-finished apps, or legacy setups. We only recommend a rebuild when that is genuinely the better path.',
-  },
-  {
-    question: 'How quickly do you respond?',
-    answer:
-      'Most inquiries get a reply within 1 to 2 business days. Urgent timelines are welcome; mention them in your message so we can prioritize honestly.',
-  },
-  {
-    question: 'Do you only work with Bubble?',
-    answer:
-      'No. We use Bubble, Webflow, WordPress, Shopify, React, Node.js, Make, and custom integrations. The stack depends on your goals, timeline, and budget.',
-  },
-]
+const faqs = CONTACT_FAQS
 
 function Chevron({ open }) {
   return (

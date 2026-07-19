@@ -1,33 +1,8 @@
 import { useState } from 'react'
+import { SERVICES_FAQS } from '../../config/faqs'
 import HomeSection from '../home/HomeSection'
 
-const faqs = [
-  {
-    question: 'Do you only work with Bubble or no-code tools?',
-    answer:
-      'No. We pick the right approach for each project: Bubble, Webflow, WordPress, Shopify, React, Node.js, or workflow tools like Make. No-code when speed wins; custom code when you need deeper control and room to grow.',
-  },
-  {
-    question: 'Can you improve systems we already use?',
-    answer:
-      'Yes. We extend, fix, and connect what you already have, including legacy apps, spreadsheets, SaaS tools, or half-finished work. We only recommend a restart when that is genuinely the better path.',
-  },
-  {
-    question: 'Do you stay involved after launch?',
-    answer:
-      'Yes. We offer ongoing maintenance, feature work, and support so your product keeps improving as usage and business needs evolve.',
-  },
-  {
-    question: 'Can you connect APIs and streamline workflows?',
-    answer:
-      'Absolutely. Integrations are a core strength: CRMs, payments, email, calendars, webhooks, Twilio, SendGrid, Google APIs, and custom backends.',
-  },
-  {
-    question: 'What types of businesses do you usually work with?',
-    answer:
-      'Founders, small teams, and growing businesses that need dependable software without enterprise overhead. Especially teams shipping MVPs, internal tools, e-commerce, or operational workflow improvements.',
-  },
-]
+const faqs = SERVICES_FAQS
 
 function Chevron({ open }) {
   return (
