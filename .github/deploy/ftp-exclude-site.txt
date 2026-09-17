@@ -6,6 +6,8 @@ api/**
 **/api/**
 admin/**
 **/admin/**
+admin.kyrithbuilds.com/**
+**/admin.kyrithbuilds.com/**
 **/config.local.php
 **/.env
 **/.env.*

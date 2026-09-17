@@ -1,6 +1,13 @@
 # KyrithBuilds
 
-Minimal React (Vite + Tailwind) frontend and PHP API under `backend/`.
+Marketing site (React + Vite + Tailwind) and PHP contact API, plus the internal **admin panel** in `admin/`.
+
+| Path | Live |
+|------|------|
+| Site (`src/`, `backend/api/`) | https://kyrithbuilds.com |
+| Admin (`admin/`) | https://admin.kyrithbuilds.com |
+
+Admin was merged from [github.com/kyrithbuilds/admin](https://github.com/kyrithbuilds/admin). Deploy notes: [docs/ADMIN-DEPLOYMENT.md](docs/ADMIN-DEPLOYMENT.md).
 
 ## Commands
 
@@ -33,7 +40,7 @@ The production build calls **`/api/contact.php`** on the **same domain** only.
 
 ## Deploy with GitHub Actions (recommended)
 
-Every push to **`main`** runs **Deploy FTP**: build → FTPS upload → live health checks.
+Every push to **`main`** runs **Deploy FTP** for the marketing site. Changes under **`admin/`** also run **Deploy Admin FTP**.
 
 Details: [`.github/DEPLOYMENT.md`](.github/DEPLOYMENT.md)
 

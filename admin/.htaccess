@@ -1,0 +1,34 @@
+# KyrithBuilds Admin — Apache rules (cPanel / shared hosting)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Force HTTPS (respect proxy / Cloudflare on cPanel)
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteCond %{HTTP:X-Forwarded-SSL} !on [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Serve real files and folders as-is (assets, api/*.php, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # /income → income.php (internal only — no external redirect, avoids loops)
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+
+    # / → index.php
+    DirectoryIndex index.php
+</IfModule>
+
+Options -Indexes
+
+<Files "config.local.php">
+    Require all denied
+</Files>
+
+<FilesMatch "\.(sql)$">
+    Require all denied
+</FilesMatch>

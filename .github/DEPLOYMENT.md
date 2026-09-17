@@ -4,6 +4,7 @@ This document describes how **kyrithbuilds.com** is built, deployed, verified, r
 
 **Repository:** [github.com/kyrithbuilds/kyrith](https://github.com/kyrithbuilds/kyrith)  
 **Live site:** https://kyrithbuilds.com  
+**Admin:** https://admin.kyrithbuilds.com (`admin/` in this repo)  
 **Hosting:** cPanel shared hosting (`public_html` document root)
 
 ---
@@ -35,6 +36,7 @@ This document describes how **kyrithbuilds.com** is built, deployed, verified, r
 |-------|------------|---------------|
 | **Frontend** | React 19, Vite 8, Tailwind 4 (SPA) | `public_html/` (contents of `dist/`) |
 | **Contact API** | PHP (`backend/api/contact.php`, SendGrid) | `public_html/api/` |
+| **Admin panel** | PHP 8 (`admin/`) | `public_html/admin.kyrithbuilds.com/` |
 | **Routing** | Apache `.htaccess` (SPA fallback) | `public_html/.htaccess`, `public_html/api/.htaccess` |
 | **Secrets (email)** | `config.local.php` on server only | `public_html/api/config.local.php` |
 
@@ -46,8 +48,9 @@ This document describes how **kyrithbuilds.com** is built, deployed, verified, r
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
-| **Deploy FTP** | [`.github/workflows/deploy-ftp.yml`](workflows/deploy-ftp.yml) | Push to `main`, `workflow_dispatch` | Build, deploy via **lftp**, health checks |
-| **CI** | [`.github/workflows/ci.yml`](workflows/ci.yml) | Push / PR to `main` | `npm ci` + `npm run build` only (no deploy) |
+| **Deploy FTP** | [`.github/workflows/deploy-ftp.yml`](workflows/deploy-ftp.yml) | Push to `main`, `workflow_dispatch` | Marketing site via **lftp** |
+| **Deploy Admin FTP** | [`.github/workflows/deploy-admin-ftp.yml`](workflows/deploy-admin-ftp.yml) | Push to `main` when `admin/**` changes, `workflow_dispatch` | Admin panel via **lftp** |
+| **CI** | [`.github/workflows/ci.yml`](workflows/ci.yml) | Push / PR to `main` | Site build + PHP syntax check |
 
 Deploy FTP uses **concurrency** group `deploy-ftp` with `cancel-in-progress: true` so only one deploy runs at a time.
 
@@ -190,7 +193,8 @@ If upload succeeds but health checks fail, the workflow exits with a warning —
 **Protected on server** (excluded from mirror / never in CI bundle):
 
 - `public_html/api/config.local.php` — SendGrid and mail settings  
-- `public_html/admin/` — `admin.kyrithbuilds.com` (not this repo; `--delete` must not remove it)  
+- `public_html/admin/` — unused/legacy path; still excluded from `--delete`  
+- `public_html/admin.kyrithbuilds.com/` — live admin subdomain document root  
 - `.env`, `.env.*`  
 - `logs/`, `uploads/`, `mail/`  
 - `*.log`  
@@ -274,13 +278,16 @@ PHP changes live in git under `backend/api/`. Revert the commit and push, or upl
 
 ### admin.kyrithbuilds.com returns 500
 
-The admin app is **not** in this repo. It usually lives in `public_html/admin/` on cPanel. Frontend deploys use `mirror --delete`, which used to remove folders that are not in `dist/` (including `admin/`).
+Admin lives in this repo under **`admin/`** and deploys to **`public_html/admin.kyrithbuilds.com/`**.
 
-1. In **cPanel → File Manager**, confirm whether `public_html/admin/` is missing or empty.  
-2. Restore that folder from **cPanel Backup** / **JetBackup** (or a FileZilla copy from before the last website deploy).  
-3. Confirm **Subdomains** document root still points at the restored folder.  
-4. Check **Errors** / Apache error log for the PHP or `.htaccess` line.  
-5. The Deploy FTP workflow now **excludes** `admin/` so a later website push should not delete it again.
+Website deploys use `mirror --delete` and must never remove `admin.kyrithbuilds.com/`.
+
+1. Confirm **Deploy Admin FTP** ran after an `admin/` push.  
+2. In **cPanel → File Manager**, confirm `public_html/admin.kyrithbuilds.com/` has PHP files.  
+3. Create **`config.local.php`** there from `admin/config.local.example.php` (not in git).  
+4. Confirm the subdomain document root is `public_html/admin.kyrithbuilds.com`.  
+
+Full admin deploy notes: [docs/ADMIN-DEPLOYMENT.md](../docs/ADMIN-DEPLOYMENT.md).
 
 ### Contact form does not send email
 

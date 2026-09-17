@@ -19,3 +19,27 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+
+  php-lint:
+    name: PHP syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Lint PHP files
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          files=(admin/**/*.php admin/*.php backend/**/*.php)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No PHP files found."
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            php -l "$f"
+          done
+          echo "All PHP files passed syntax check."
