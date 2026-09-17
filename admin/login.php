@@ -87,7 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Invalid email or password.';
             }
         } catch (Throwable $e) {
-            $error = 'Unable to sign in right now. Please try again shortly.';
+            $message = $e->getMessage();
+            if (str_contains($message, 'config.local.php')) {
+                $error = 'Database config is missing on the server. Add config.local.php and try again.';
+            } else {
+                $error = 'Unable to sign in right now. Please try again shortly.';
+            }
         }
     }
 }

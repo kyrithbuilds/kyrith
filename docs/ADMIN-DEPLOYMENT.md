@@ -19,6 +19,4 @@ FTP secrets (`FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`) are shared with the w
 
 ## `config.local.php`
 
-CI does **not** upload this file. On the server, copy `admin/config.local.example.php` to `config.local.php` in the admin document root and fill in MySQL credentials from cPanel.
-
-Locally: copy the example to `admin/config.local.php` (gitignored).
+The private repo currently deploys `admin/config.local.php` (Apache blocks HTTP access). After login works, prefer moving the password to a GitHub secret and gitignoring the file.

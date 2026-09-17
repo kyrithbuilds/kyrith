@@ -5,7 +5,7 @@
 #   FTP_ADMIN_SITE_DIR — folder relative to FTP login root (default: admin.kyrithbuilds.com)
 #   ADMIN_DEPLOY_URL   — live admin URL (default: https://admin.kyrithbuilds.com)
 #
-# Does not upload config.local.php — create that once on the server.
+# Uploads admin/ including config.local.php (Apache blocks HTTP access to that file).
 
 name: Deploy Admin FTP
 
@@ -49,6 +49,7 @@ jobs:
           test -f admin/includes/entity-helpers.php
           test -f admin/includes/lookup-options.php
           test -f admin/schema-patch-lookups.sql
+          test -f admin/config.local.php
           test -f admin/config.local.example.php
           test -f admin/.htaccess
           test -f admin/clients.php
@@ -94,7 +95,6 @@ jobs:
           cd ${SITE_DIR};
           lcd ${REPO_ROOT}/admin;
           mirror -R . . \
-            --exclude-glob 'config.local.php' \
             --exclude-glob '*.sql' \
             --exclude-glob '.env' \
             --exclude-glob '.env.*' \
@@ -159,5 +159,5 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Target:** \`admin/\` → \`${{ steps.paths.outputs.site_dir }}/\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **URL:** ${{ env.DEPLOY_URL }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **config.local.php:** not uploaded (create on server)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **config.local.php:** uploaded from repo (blocked from HTTP by .htaccess)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **health:** $([ '${{ steps.health.outputs.health_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"

@@ -17,7 +17,6 @@ kyrithbuilds-upload.zip
 !.env.example
 *.local
 backend/api/config.local.php
-admin/config.local.php
 
 # Editor directories and files
 .vscode/*
