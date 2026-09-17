@@ -220,19 +220,38 @@ function computeBalances(income, expenses, settlements) {
   const incomeImbalanceA = incomeByPartner[PARTNER_A] - fairShareIncome; // + means A holds more than fair share
   const expenseImbalanceA = expenseByPartner[PARTNER_A] - fairShareExpense; // + means A overpaid expenses
 
+  const settlementsPaid = { [PARTNER_A]: 0, [PARTNER_B]: 0 };
+  const settlementsReceived = { [PARTNER_A]: 0, [PARTNER_B]: 0 };
   let settledAtoB = 0;
+  let totalSettlements = 0;
   settlements.forEach((s) => {
-    if (s.from === PARTNER_A && s.to === PARTNER_B) settledAtoB += Number(s.amount || 0);
-    if (s.from === PARTNER_B && s.to === PARTNER_A) settledAtoB -= Number(s.amount || 0);
+    const amount = Number(s.amount || 0);
+    totalSettlements += amount;
+    if (settlementsPaid[s.from] !== undefined) settlementsPaid[s.from] += amount;
+    if (settlementsReceived[s.to] !== undefined) settlementsReceived[s.to] += amount;
+    if (s.from === PARTNER_A && s.to === PARTNER_B) settledAtoB += amount;
+    if (s.from === PARTNER_B && s.to === PARTNER_A) settledAtoB -= amount;
   });
 
   const netAtoB = incomeImbalanceA - expenseImbalanceA - settledAtoB;
+  const currentBalance = totalIncome - totalExpenses;
+  const partnerBalance = {
+    [PARTNER_A]:
+      incomeByPartner[PARTNER_A] - expenseByPartner[PARTNER_A] - settlementsPaid[PARTNER_A] + settlementsReceived[PARTNER_A],
+    [PARTNER_B]:
+      incomeByPartner[PARTNER_B] - expenseByPartner[PARTNER_B] - settlementsPaid[PARTNER_B] + settlementsReceived[PARTNER_B],
+  };
 
   return {
     totalIncome,
     totalExpenses,
+    totalSettlements,
+    currentBalance,
     incomeByPartner,
     expenseByPartner,
+    settlementsPaid,
+    settlementsReceived,
+    partnerBalance,
     fairShareIncome,
     fairShareExpense,
     netAtoB,
@@ -298,6 +317,20 @@ function BalanceBeam({ netAtoB }) {
   );
 }
 
+function partnerBalanceSub(balances, partner) {
+  return (
+    <>
+      Income {formatINR(balances.incomeByPartner[partner])}
+      <br />
+      Expenses {formatINR(balances.expenseByPartner[partner])}
+      <br />
+      Settlements paid {formatINR(balances.settlementsPaid[partner])}
+      <br />
+      Settlements received {formatINR(balances.settlementsReceived[partner])}
+    </>
+  );
+}
+
 function MetricCard({ label, value, sub, tone }) {
   const color = tone === "positive" ? "#0E7A3D" : tone === "negative" ? "#C0392B" : NAVY;
   return (
@@ -315,7 +348,11 @@ function MetricCard({ label, value, sub, tone }) {
         {label}
       </div>
       <div style={{ fontSize: 24, fontWeight: 700, color }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: SLATE, marginTop: 4 }}>{sub}</div>}
+      {sub && (
+        <div style={{ fontSize: 12, color: SLATE, marginTop: 6, lineHeight: 1.45 }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -980,7 +1017,7 @@ export default function App() {
               }}
             >
               <div style={{ fontSize: 12.5, color: SLATE, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-                Current balance
+                Partner settlement
               </div>
               <div style={{ fontSize: 30, fontWeight: 700, color: Math.abs(balances.netAtoB) < 0.5 ? SLATE : balances.netAtoB > 0 ? BLUE : NAVY, marginBottom: 18 }}>
                 {balanceSentence}
@@ -1012,17 +1049,30 @@ export default function App() {
             </div>
 
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <MetricCard
+                label="Current balance"
+                value={formatINR(balances.currentBalance)}
+                sub={
+                  <>
+                    Total income {formatINR(balances.totalIncome)}
+                    <br />
+                    Total expenses {formatINR(balances.totalExpenses)}
+                    <br />
+                    Settlements {formatINR(balances.totalSettlements)}
+                  </>
+                }
+              />
               <MetricCard label="Total income" value={formatINR(balances.totalIncome)} sub={`${income.length} entries`} />
               <MetricCard label="Total expenses" value={formatINR(balances.totalExpenses)} sub={`${expenses.length} entries`} />
               <MetricCard
-                label={`${PARTNER_A} received`}
-                value={formatINR(balances.incomeByPartner[PARTNER_A])}
-                sub={`Fair share: ${formatINR(balances.fairShareIncome)}`}
+                label={`${PARTNER_A} balance`}
+                value={formatINR(balances.partnerBalance[PARTNER_A])}
+                sub={partnerBalanceSub(balances, PARTNER_A)}
               />
               <MetricCard
-                label={`${PARTNER_B} received`}
-                value={formatINR(balances.incomeByPartner[PARTNER_B])}
-                sub={`Fair share: ${formatINR(balances.fairShareIncome)}`}
+                label={`${PARTNER_B} balance`}
+                value={formatINR(balances.partnerBalance[PARTNER_B])}
+                sub={partnerBalanceSub(balances, PARTNER_B)}
               />
             </div>
 
