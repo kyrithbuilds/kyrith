@@ -28,7 +28,7 @@ $isSettled = $summary['debtor_name'] === null;
 </div>
 
 <div class="balance-hero<?= $isSettled ? ' is-settled' : ' is-owed' ?>">
-    <p class="balance-hero-label">Current balance</p>
+    <p class="balance-hero-label">Partner settlement</p>
     <p class="balance-hero-amount"><?= h($summary['balance_message']) ?></p>
 </div>
 
@@ -37,6 +37,15 @@ $isSettled = $summary['debtor_name'] === null;
 </div>
 
 <div class="metrics-grid">
+    <div class="metric-card">
+        <p class="metric-label">Current balance</p>
+        <p class="metric-value"><?= h(finance_format_inr($summary['current_balance'])) ?></p>
+        <p class="metric-sub">
+            Total income <?= h(finance_format_inr($summary['total_income'])) ?><br>
+            Total expenses <?= h(finance_format_inr($summary['total_expenses'])) ?><br>
+            Settlements <?= h(finance_format_inr($summary['total_settlements'])) ?>
+        </p>
+    </div>
     <div class="metric-card">
         <p class="metric-label">Total income</p>
         <p class="metric-value"><?= h(finance_format_inr($summary['total_income'])) ?></p>
@@ -47,12 +56,13 @@ $isSettled = $summary['debtor_name'] === null;
     </div>
     <?php foreach ($summary['partners'] as $partner): ?>
         <div class="metric-card">
-            <p class="metric-label"><?= h($partner['name']) ?></p>
-            <p class="metric-value"><?= h(finance_format_inr($partner['income_received'])) ?></p>
+            <p class="metric-label"><?= h($partner['name']) ?> balance</p>
+            <p class="metric-value"><?= h(finance_format_inr($partner['cash_balance'])) ?></p>
             <p class="metric-sub">
-                Received (fair share <?= h(finance_format_inr($partner['fair_share_income'])) ?>)
-                · Paid <?= h(finance_format_inr($partner['expenses_paid'])) ?>
-                (fair share <?= h(finance_format_inr($partner['fair_share_expense'])) ?>)
+                Income <?= h(finance_format_inr($partner['income_received'])) ?><br>
+                Expenses <?= h(finance_format_inr($partner['expenses_paid'])) ?><br>
+                Settlements paid <?= h(finance_format_inr($partner['settlements_paid'])) ?><br>
+                Settlements received <?= h(finance_format_inr($partner['settlements_received'])) ?>
             </p>
         </div>
     <?php endforeach; ?>

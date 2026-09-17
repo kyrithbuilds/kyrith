@@ -8,12 +8,17 @@ declare(strict_types=1);
  * @return array{
  *   total_income: float,
  *   total_expenses: float,
+ *   total_settlements: float,
+ *   current_balance: float,
  *   partners: list<array{
  *     id: int,
  *     name: string,
  *     split_ratio: float,
  *     income_received: float,
  *     expenses_paid: float,
+ *     settlements_paid: float,
+ *     settlements_received: float,
+ *     cash_balance: float,
  *     fair_share_income: float,
  *     fair_share_expense: float,
  *     income_imbalance: float,
@@ -85,18 +90,21 @@ function finance_calculate_settlement_summary(PDO $pdo): array
         $incomeImbalance = $incomeReceived - $fairShareIncome;
         $expenseImbalance = $expensesPaid - $fairShareExpense;
 
-        $netSettled = 0.0;
+        $settlementsPaid = 0.0;
+        $settlementsReceived = 0.0;
         if (isset($settlementsOut[$id])) {
             foreach ($settlementsOut[$id] as $amount) {
-                $netSettled += $amount;
+                $settlementsPaid += $amount;
             }
         }
         if (isset($settlementsIn[$id])) {
             foreach ($settlementsIn[$id] as $amount) {
-                $netSettled -= $amount;
+                $settlementsReceived += $amount;
             }
         }
 
+        $netSettled = $settlementsPaid - $settlementsReceived;
+        $cashBalance = $incomeReceived - $expensesPaid - $settlementsPaid + $settlementsReceived;
         $netPosition = $incomeImbalance - $expenseImbalance - $netSettled;
 
         $partnerRows[] = [
@@ -105,6 +113,9 @@ function finance_calculate_settlement_summary(PDO $pdo): array
             'split_ratio' => $splitRatio,
             'income_received' => $incomeReceived,
             'expenses_paid' => $expensesPaid,
+            'settlements_paid' => $settlementsPaid,
+            'settlements_received' => $settlementsReceived,
+            'cash_balance' => $cashBalance,
             'fair_share_income' => $fairShareIncome,
             'fair_share_expense' => $fairShareExpense,
             'income_imbalance' => $incomeImbalance,
@@ -143,9 +154,13 @@ function finance_calculate_settlement_summary(PDO $pdo): array
         $balanceMessage = 'All settled';
     }
 
+    $totalSettlements = (float) $pdo->query('SELECT COALESCE(SUM(amount), 0) FROM settlements')->fetchColumn();
+
     return [
         'total_income' => $totalIncome,
         'total_expenses' => $totalExpenses,
+        'total_settlements' => $totalSettlements,
+        'current_balance' => $totalIncome - $totalExpenses,
         'partners' => $partnerRows,
         'balance_message' => $balanceMessage,
         'debtor_name' => $debtorName,
