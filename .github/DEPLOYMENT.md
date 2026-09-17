@@ -190,6 +190,7 @@ If upload succeeds but health checks fail, the workflow exits with a warning —
 **Protected on server** (excluded from mirror / never in CI bundle):
 
 - `public_html/api/config.local.php` — SendGrid and mail settings  
+- `public_html/admin/` — `admin.kyrithbuilds.com` (not this repo; `--delete` must not remove it)  
 - `.env`, `.env.*`  
 - `logs/`, `uploads/`, `mail/`  
 - `*.log`  
@@ -270,6 +271,16 @@ PHP changes live in git under `backend/api/`. Revert the commit and push, or upl
 | HTTP 404 on `/contact` | Missing SPA `.htaccess` | Ensure `public/.htaccess` is in `dist/` after build |
 | Missing `KyrithBuilds` in body | Wrong site / empty `index.html` | Check `public_html/index.html` on server |
 | HTTP 5xx | Server/PHP error | Check cPanel error logs |
+
+### admin.kyrithbuilds.com returns 500
+
+The admin app is **not** in this repo. It usually lives in `public_html/admin/` on cPanel. Frontend deploys use `mirror --delete`, which used to remove folders that are not in `dist/` (including `admin/`).
+
+1. In **cPanel → File Manager**, confirm whether `public_html/admin/` is missing or empty.  
+2. Restore that folder from **cPanel Backup** / **JetBackup** (or a FileZilla copy from before the last website deploy).  
+3. Confirm **Subdomains** document root still points at the restored folder.  
+4. Check **Errors** / Apache error log for the PHP or `.htaccess` line.  
+5. The Deploy FTP workflow now **excludes** `admin/` so a later website push should not delete it again.
 
 ### Contact form does not send email
 

@@ -4,7 +4,7 @@
 # Variable (optional): FTP_SITE_DIR — use "." when FTP login root is already public_html (default)
 #
 # Uploads: dist/ → public_html/   |   deploy-api/ → public_html/api/
-# Never overwrites/deletes: api/config.local.php, .env, logs/, uploads/
+# Never overwrites/deletes: api/config.local.php, admin/, .env, logs/, uploads/
 
 name: Deploy FTP
 
@@ -111,6 +111,8 @@ jobs:
           mirror -R --delete . . \
             --exclude api/ \
             --exclude-glob 'api/**' \
+            --exclude admin/ \
+            --exclude-glob 'admin/**' \
             --exclude-glob 'config.local.php' \
             --exclude-glob '.env' \
             --exclude-glob '.env.*' \
@@ -194,6 +196,6 @@ jobs:
           echo "- **Tool:** lftp (explicit FTPS, passive)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Frontend:** \`dist/\` → \`${{ steps.paths.outputs.site_dir }}/\` (mirror --delete)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **API:** \`deploy-api/\` → \`${{ steps.paths.outputs.api_dir }}/\` (mirror, no delete)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Protected on server:** \`config.local.php\`, \`.env\`, \`logs/\`, \`uploads/\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Protected on server:** \`config.local.php\`, \`admin/\`, \`.env\`, \`logs/\`, \`uploads/\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- **home:** $([ '${{ steps.health.outputs.home_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **contact:** $([ '${{ steps.health.outputs.contact_ok }}' = '1' ] && echo pass || echo fail)" >> "$GITHUB_STEP_SUMMARY"

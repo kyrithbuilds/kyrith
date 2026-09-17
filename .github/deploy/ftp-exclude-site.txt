@@ -4,6 +4,8 @@
 **/node_modules/**
 api/**
 **/api/**
+admin/**
+**/admin/**
 **/config.local.php
 **/.env
 **/.env.*
