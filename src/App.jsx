@@ -21,6 +21,7 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/bubble-developer" element={<ServicePage page="bubble-developer" />} />
           <Route path="/mvp-development" element={<ServicePage page="mvp-development" />} />
+          <Route path="/workflow-automation" element={<ServicePage page="workflow-automation" />} />
           <Route path="/about" element={<About />} />
           <Route path="/about-us" element={<Navigate to="/about" replace />} />
           <Route path="/contact" element={<Contact />} />

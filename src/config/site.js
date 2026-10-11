@@ -32,6 +32,12 @@ export const PAGE_SEO = {
       'MVP development services for founders and small teams. Core features only, live in 3 to 6 weeks, built remote-first for clients worldwide.',
     path: '/mvp-development',
   },
+  'workflow-automation': {
+    title: 'Workflow Automation Services | KyrithBuilds',
+    description:
+      'Workflow automation services that connect your tools and remove manual work. Make, APIs and webhooks, built remote-first for clients worldwide.',
+    path: '/workflow-automation',
+  },
   about: {
     title: 'About KyrithBuilds | Software Built for Real Operations',
     description:

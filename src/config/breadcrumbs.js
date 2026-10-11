@@ -18,6 +18,11 @@ export const PAGE_BREADCRUMBS = {
     { name: 'Services', path: '/services' },
     { name: 'MVP Development', path: '/mvp-development' },
   ],
+  '/workflow-automation': [
+    HOME,
+    { name: 'Services', path: '/services' },
+    { name: 'Workflow Automation', path: '/workflow-automation' },
+  ],
   '/about': [HOME, { name: 'About Us', path: '/about' }],
   '/contact': [HOME, { name: 'Contact', path: '/contact' }],
   '/privacy': [HOME, { name: 'Privacy Policy', path: '/privacy' }],

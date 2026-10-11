@@ -1,5 +1,6 @@
 import { BUBBLE_DEV } from './bubbleDeveloper'
 import { MVP_DEV } from './mvpDevelopment'
+import { WORKFLOW_AUTO } from './workflowAutomation'
 
 /**
  * Service landing pages rendered by pages/ServicePage.jsx.
@@ -18,5 +19,11 @@ export const SERVICE_PAGES = {
     content: MVP_DEV,
     serviceName: 'MVP development services',
     serviceType: 'MVP development',
+  },
+  'workflow-automation': {
+    path: '/workflow-automation',
+    content: WORKFLOW_AUTO,
+    serviceName: 'Workflow automation services',
+    serviceType: 'Workflow automation',
   },
 }

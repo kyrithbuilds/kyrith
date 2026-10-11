@@ -21,6 +21,7 @@ const services = [
     description:
       'Connect the tools you already use so data flows cleanly and repetitive tasks disappear.',
     featured: false,
+    link: { to: '/workflow-automation', label: 'Workflow automation services' },
   },
 ]
 

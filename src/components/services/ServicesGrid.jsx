@@ -90,6 +90,7 @@ const services = [
     description: 'Connect tools and remove repetitive work across your stack.',
     chips: ['APIs', 'Twilio', 'Make.com', 'Webhooks'],
     icon: IconLightning,
+    links: [{ to: '/workflow-automation', label: 'Workflow automation services' }],
   },
   {
     title: 'E-commerce Solutions',

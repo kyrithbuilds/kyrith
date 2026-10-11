@@ -68,6 +68,11 @@ export default function Footer() {
                   MVP Development
                 </NavLink>
               </li>
+              <li>
+                <NavLink to="/workflow-automation" className={footerNavLinkClass}>
+                  Workflow Automation
+                </NavLink>
+              </li>
             </ul>
           </div>
 
