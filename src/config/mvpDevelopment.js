@@ -58,7 +58,7 @@ export const MVP_DEV = {
     {
       "question": "What can make an MVP cost more after launch?",
       "answer": "Integrations that run constantly can cost more than you expect once people use the product. In our experience, things like access token renewal, email automations and calendar data fetching can use too many workload units, even for a single user.",
-      "detail": "On Bubble, usage is measured in [workload units](https://bubble.io/pricing), and overages begin once you pass your plan's allowance. In our experience the cost of scale starts to matter at roughly 100 to 500 users, depending on how often the product is used. That is why we scope integrations early and tell you if the product is heading toward the point where custom code is the better path. For the automation side, see our [workflow automation services](/workflow-automation).",
+      "detail": "On Bubble, usage is measured in [workload units](https://bubble.io/pricing), and overages begin once you pass your plan's allowance. In our experience the cost of scale starts to matter at roughly 100 to 500 users, depending on how often the product is used. That is why we scope integrations early and tell you if the product is heading toward the point where custom code is the better path. For the automation side, see our [workflow automation services](/workflow-automation). Plan prices and workload examples are in our guide to [Bubble.io pricing](/blog/bubble-io-pricing).",
       "table": null
     },
     {

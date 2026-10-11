@@ -5,14 +5,15 @@
   RewriteEngine On
   RewriteBase /
 
+  # Pre-rendered pages: /services → services.html, /blog → blog.html (written by scripts/prerender.mjs).
+  # Must come before the file/folder rule: /blog is also a folder (it holds /blog/<post>.html).
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L]
+
   # Serve real files and folders as-is (includes /api/contact.php and /assets/*)
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-
-  # Pre-rendered pages: /services → services.html (written by scripts/prerender.mjs)
-  RewriteCond %{REQUEST_FILENAME}.html -f
-  RewriteRule ^(.+)$ $1.html [L]
 
   # React Router (client-side routes) → SPA shell
   RewriteRule . /index.html [L]

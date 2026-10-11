@@ -23,6 +23,12 @@ export const PAGE_BREADCRUMBS = {
     { name: 'Services', path: '/services' },
     { name: 'Workflow Automation', path: '/workflow-automation' },
   ],
+  '/blog': [HOME, { name: 'Blog', path: '/blog' }],
+  '/blog/bubble-io-pricing': [
+    HOME,
+    { name: 'Blog', path: '/blog' },
+    { name: 'Bubble.io Pricing', path: '/blog/bubble-io-pricing' },
+  ],
   '/about': [HOME, { name: 'About Us', path: '/about' }],
   '/contact': [HOME, { name: 'Contact', path: '/contact' }],
   '/privacy': [HOME, { name: 'Privacy Policy', path: '/privacy' }],

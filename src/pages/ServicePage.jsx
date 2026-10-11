@@ -5,43 +5,14 @@ import FaqPageStructuredData from '../components/seo/FaqPageStructuredData'
 import PageSEO from '../components/seo/PageSEO'
 import ServiceStructuredData from '../components/seo/ServiceStructuredData'
 import Container from '../components/ui/Container'
+import ContentTable from '../components/ui/ContentTable'
+import InlineLinks from '../components/ui/InlineLinks'
 import Reveal from '../components/ui/Reveal'
 import Section from '../components/ui/Section'
 import { primaryLinkClass } from '../components/ui/linkButtons'
 import { SERVICE_PAGES } from '../config/servicePages'
 import { CTA } from '../config/analytics'
 import { PAGE_SEO } from '../config/site'
-
-const linkClass = 'font-medium text-secondary underline-offset-2 hover:underline'
-
-/** Render "[text](url)" links: internal paths use the router, everything else is a plain anchor. */
-function Inline({ text }) {
-  const parts = []
-  let last = 0
-  for (const match of text.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
-    if (match.index > last) parts.push(text.slice(last, match.index))
-    const [, label, href] = match
-    parts.push(
-      href.startsWith('/') ? (
-        <Link key={match.index} to={href} className={linkClass}>
-          {label}
-        </Link>
-      ) : (
-        <a
-          key={match.index}
-          href={href}
-          className={linkClass}
-          {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        >
-          {label}
-        </a>
-      ),
-    )
-    last = match.index + match[0].length
-  }
-  if (last < text.length) parts.push(text.slice(last))
-  return parts
-}
 
 const bodyClass = 'mt-4 text-base leading-relaxed text-textSecondary'
 
@@ -98,7 +69,7 @@ export default function ServicePage({ page }) {
               </Link>
             </div>
             <p className="mt-4 text-sm text-textSecondary">
-              <Inline text={cta.replace(/^\[Start Your Project\]\([^)]*\) or /, 'Or ')} />
+              <InlineLinks text={cta.replace(/^\[Start Your Project\]\([^)]*\) or /, 'Or ')} />
             </p>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-textSecondary/90">{who}</p>
           </div>
@@ -121,42 +92,14 @@ export default function ServicePage({ page }) {
                   {question}
                 </h2>
                 <p className="mt-5 text-base font-medium leading-relaxed text-primary/90 sm:text-lg">
-                  <Inline text={answer} />
+                  <InlineLinks text={answer} />
                 </p>
                 {detail ? (
                   <p className={bodyClass}>
-                    <Inline text={detail} />
+                    <InlineLinks text={detail} />
                   </p>
                 ) : null}
-                {table ? (
-                  <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-white">
-                    <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-border bg-section">
-                          {table.head.map((heading) => (
-                            <th key={heading} className="px-4 py-3 font-semibold text-primary">
-                              {heading}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {table.rows.map((row) => (
-                          <tr key={row[0]} className="border-b border-border last:border-0">
-                            {row.map((cell, cellIndex) => (
-                              <td
-                                key={cell}
-                                className={`px-4 py-3 align-top ${cellIndex === 0 ? 'font-medium text-primary' : 'text-textSecondary'}`}
-                              >
-                                {cell}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : null}
+                {table ? <ContentTable table={table} /> : null}
               </div>
             </Reveal>
           </Container>
@@ -167,7 +110,7 @@ export default function ServicePage({ page }) {
         <Container>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-base leading-relaxed text-primary/90 sm:text-lg">
-              <Inline text={ctaEnd} />
+              <InlineLinks text={ctaEnd} />
             </p>
           </div>
         </Container>

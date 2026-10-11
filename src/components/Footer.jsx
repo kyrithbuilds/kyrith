@@ -73,6 +73,11 @@ export default function Footer() {
                   Workflow Automation
                 </NavLink>
               </li>
+              <li>
+                <NavLink to="/blog" className={footerNavLinkClass}>
+                  Blog
+                </NavLink>
+              </li>
             </ul>
           </div>
 

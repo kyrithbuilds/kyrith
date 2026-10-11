@@ -5,6 +5,8 @@ import AppLayout from './layouts/AppLayout'
 import Home from './pages/Home'
 import Services from './pages/Services'
 import ServicePage from './pages/ServicePage'
+import BlogIndex from './pages/BlogIndex'
+import BlogPost from './pages/BlogPost'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Privacy from './pages/Privacy'
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/bubble-developer" element={<ServicePage page="bubble-developer" />} />
           <Route path="/mvp-development" element={<ServicePage page="mvp-development" />} />
           <Route path="/workflow-automation" element={<ServicePage page="workflow-automation" />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/about" element={<About />} />
           <Route path="/about-us" element={<Navigate to="/about" replace />} />
           <Route path="/contact" element={<Contact />} />

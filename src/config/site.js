@@ -38,6 +38,12 @@ export const PAGE_SEO = {
       'Workflow automation services that connect your tools and remove manual work. Make, APIs and webhooks, built remote-first for clients worldwide.',
     path: '/workflow-automation',
   },
+  blog: {
+    title: 'Blog: Bubble, MVPs and Automation | KyrithBuilds',
+    description:
+      'Practical notes from KyrithBuilds on Bubble.io, MVP development and workflow automation, based on what we build for clients.',
+    path: '/blog',
+  },
   about: {
     title: 'About KyrithBuilds | Software Built for Real Operations',
     description:

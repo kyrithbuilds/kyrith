@@ -52,7 +52,7 @@ export const BUBBLE_DEV = {
     {
       "question": "When does Bubble stop being the right tool?",
       "answer": "Bubble stops being the right tool when usage costs or automation complexity outgrow what the platform handles well. In our experience that shows up once a product reaches roughly 100 to 500 users and workload consumption becomes a real cost.",
-      "detail": "Bubble measures usage in [workload units](https://bubble.io/pricing), and overages begin once you pass your plan's allowance. How often people use the product matters as much as how many users you have. The other trigger is automation and complexity beyond what Bubble can do. We tell you early when custom code is the better path, so you can plan for it instead of being surprised by it.",
+      "detail": "Bubble measures usage in [workload units](https://bubble.io/pricing), and overages begin once you pass your plan's allowance. How often people use the product matters as much as how many users you have. The other trigger is automation and complexity beyond what Bubble can do. We tell you early when custom code is the better path, so you can plan for it instead of being surprised by it. For plan prices and workload examples, see our guide to [Bubble.io pricing](/blog/bubble-io-pricing).",
       "table": null
     },
     {
