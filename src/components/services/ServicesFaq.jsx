@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { SERVICES_FAQS } from '../../config/faqs'
 import HomeSection from '../home/HomeSection'
 
@@ -32,7 +33,7 @@ export default function ServicesFaq() {
       intro="Clear answers before you reach out, so you know what working with KyrithBuilds looks like."
     >
       <ul className="mx-auto mt-11 flex max-w-2xl list-none flex-col gap-3 sm:mt-12 sm:gap-3.5">
-        {faqs.map(({ question, answer }, index) => {
+        {faqs.map(({ question, answer, link }, index) => {
           const isOpen = openIndex === index
           const panelId = `faq-panel-${index}`
           const buttonId = `faq-button-${index}`
@@ -77,6 +78,14 @@ export default function ServicesFaq() {
                   <div className="overflow-hidden">
                     <p className="max-w-prose px-5 pb-5 pt-0 text-sm leading-[1.65] text-textSecondary sm:px-6 sm:pb-6 sm:text-[0.9375rem]">
                       {answer}
+                      {link ? (
+                        <>
+                          {' '}
+                          <Link to={link.to} className="font-medium text-secondary underline-offset-2 hover:underline">
+                            {link.label}
+                          </Link>
+                        </>
+                      ) : null}
                     </p>
                   </div>
                 </div>

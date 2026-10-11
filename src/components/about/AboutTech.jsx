@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import bubble from '../../assets/tech/bubble.svg'
 import react from '../../assets/tech/react.svg'
 import make from '../../assets/tech/make.svg'
@@ -14,6 +15,7 @@ const approaches = [
     headline: 'Launch fast',
     description:
       'Validate ideas and ship MVPs without months of custom work. We often reach for no-code platforms like Bubble when time-to-market is the priority.',
+    link: { to: '/bubble-developer', label: 'no-code platforms like Bubble' },
   },
   {
     name: 'React',
@@ -57,7 +59,7 @@ export default function AboutTech() {
         </Reveal>
 
         <ul className="mt-11 list-none space-y-4 sm:mt-12">
-          {approaches.map(({ name, src, category, headline, description }, index) => (
+          {approaches.map(({ name, src, category, headline, description, link }, index) => (
             <Reveal key={name} delay={index * 70}>
               <li
                 className={`group flex flex-col gap-4 rounded-xl border border-primary/[0.07] bg-white p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-6 ${cardSurfaceHover}`}
@@ -79,6 +81,11 @@ export default function AboutTech() {
                   <p className="mt-2 max-w-prose text-sm leading-[1.65] text-textSecondary sm:text-[0.9375rem]">
                     {description}
                   </p>
+                  {link ? (
+                    <Link to={link.to} className="mt-2 inline-block text-sm font-medium text-secondary underline-offset-2 hover:underline">
+                      See our Bubble MVP process →
+                    </Link>
+                  ) : null}
                 </div>
               </li>
             </Reveal>

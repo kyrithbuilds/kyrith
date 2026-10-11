@@ -5,7 +5,7 @@ const stats = [
   { value: '10+', label: 'Projects' },
   { value: '15+', label: 'Automations' },
   { value: '5+', label: 'Platforms' },
-  { value: '100%', label: 'Custom builds' },
+  { value: '100%', label: 'Built from scratch' },
 ]
 
 export default function HomeProof() {

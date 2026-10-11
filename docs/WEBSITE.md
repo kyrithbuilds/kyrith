@@ -243,3 +243,11 @@ Breadcrumb and FAQ copy must stay in sync between UI components and config files
 ---
 
 *Last updated for lftp-based deploy pipeline and current site structure.*
+
+## Pre-rendering
+
+`npm run build` runs `vite build` and then `scripts/prerender.mjs`. The script opens every route in `public/sitemap.xml` in headless Chrome and writes the rendered HTML back to `dist/` (`/` → `index.html`, `/services` → `services.html`, and so on). `public/.htaccess` maps `/services` to `services.html`. The React app still boots on top, so visitor behaviour is unchanged, but crawlers and AI engines now get real content, titles, meta tags and JSON-LD without running JavaScript.
+
+- **New route?** Add it to `public/sitemap.xml`; the pre-render picks it up from there.
+- **Chrome:** uses `CHROME_PATH` or a system Chrome/Edge/Chromium. Locally it skips with a warning if none is found. CI sets `PRERENDER_STRICT=1`, so a missing Chrome fails the build instead.
+- **Analytics:** the script blocks all external requests while rendering, so builds never send hits to Google Analytics.

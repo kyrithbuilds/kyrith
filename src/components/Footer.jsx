@@ -56,6 +56,14 @@ export default function Footer() {
                 ))}
               </ul>
             </nav>
+            <h2 className={`${columnTitleClass} mt-8`}>Popular</h2>
+            <ul className="mt-4 flex flex-col gap-3 sm:mt-5 sm:gap-3.5">
+              <li>
+                <NavLink to="/bubble-developer" className={footerNavLinkClass}>
+                  Bubble Developer
+                </NavLink>
+              </li>
+            </ul>
           </div>
 
           {/* Contact */}

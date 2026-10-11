@@ -44,6 +44,9 @@ jobs:
           cache: npm
 
       - name: Install and build
+        env:
+          # Pre-render every route with the runner's Chrome; fail the deploy if it cannot.
+          PRERENDER_STRICT: '1'
         run: |
           npm ci
           npm run build
@@ -166,8 +169,9 @@ jobs:
           }
 
           check_url home "/" "KyrithBuilds" && HOME_OK=1
-          # SPA: /contact serves index.html (no "Contact" in static markup)
-          check_url contact "/contact" "KyrithBuilds" && CONTACT_OK=1
+          # Pre-rendered pages: static HTML already contains the page title
+          check_url contact "/contact" "Contact KyrithBuilds" && CONTACT_OK=1
+          check_url bubble "/bubble-developer" "Bubble Developer for MVPs" || true
 
           {
             echo "home_ok=${HOME_OK}"

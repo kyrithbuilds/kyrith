@@ -14,6 +14,7 @@ const services = [
     description:
       'Bubble, Webflow, WordPress, and Shopify when speed to market and easy content updates matter most.',
     featured: true,
+    link: { to: '/bubble-developer', label: 'Bubble developer for MVPs' },
   },
   {
     title: 'Integrations & automation',
@@ -23,7 +24,7 @@ const services = [
   },
 ]
 
-function BuildCard({ title, description, featured = false }) {
+function BuildCard({ title, description, featured = false, link }) {
   return (
     <article
       className={`group relative flex h-full flex-col rounded-xl border p-7 shadow-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_18px_44px_-16px_rgba(65,114,244,0.3),0_4px_16px_-4px_rgba(2,29,65,0.08)] sm:p-8 ${
@@ -43,6 +44,11 @@ function BuildCard({ title, description, featured = false }) {
       <p className="mt-3 text-sm leading-relaxed text-textSecondary sm:mt-3.5 sm:text-base">
         {description}
       </p>
+      {link ? (
+        <Link to={link.to} className="mt-3 text-sm font-medium text-secondary underline-offset-2 hover:underline">
+          {link.label} →
+        </Link>
+      ) : null}
     </article>
   )
 }

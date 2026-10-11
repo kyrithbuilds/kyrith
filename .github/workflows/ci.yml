@@ -18,7 +18,10 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run build
+      - name: Build and pre-render
+        run: npm run build
+        env:
+          PRERENDER_STRICT: '1'
 
   php-lint:
     name: PHP syntax check

@@ -3,6 +3,7 @@
 export const SERVICES_FAQS = [
   {
     question: 'Do you only work with Bubble or no-code tools?',
+    link: { to: '/bubble-developer', label: 'See how our Bubble MVPs work' },
     answer:
       'No. We pick the right approach for each project: Bubble, Webflow, WordPress, Shopify, React, Node.js, or workflow tools like Make. No-code when speed wins; custom code when you need deeper control and room to grow.',
   },

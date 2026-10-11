@@ -4,6 +4,7 @@ import Section from '../ui/Section'
 
 const links = [
   { to: '/services', label: 'Services' },
+  { to: '/bubble-developer', label: 'Bubble MVPs' },
   { to: '/about', label: 'About' },
   { to: '/about#about-process', label: 'How we work' },
 ]

@@ -77,6 +77,9 @@ export default function AboutMission() {
                 We started this studio to help businesses fix real operational friction, not sell
                 another app they didn&apos;t need.
               </p>
+              <p className="mt-4 text-sm font-semibold text-primary/80 sm:text-base">
+                Pooja Raval, Founder of KyrithBuilds
+              </p>
 
               <div className="mt-11 space-y-9 sm:mt-12 sm:space-y-10">
                 {copyBlocks.map(({ label, text }) => (

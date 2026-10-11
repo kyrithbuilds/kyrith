@@ -8,6 +8,11 @@ const HOME = { name: 'Home', path: '/' }
 /** @type {Record<string, { name: string, path: string }[]>} */
 export const PAGE_BREADCRUMBS = {
   '/services': [HOME, { name: 'Services', path: '/services' }],
+  '/bubble-developer': [
+    HOME,
+    { name: 'Services', path: '/services' },
+    { name: 'Bubble Developer', path: '/bubble-developer' },
+  ],
   '/about': [HOME, { name: 'About Us', path: '/about' }],
   '/contact': [HOME, { name: 'Contact', path: '/contact' }],
   '/privacy': [HOME, { name: 'Privacy Policy', path: '/privacy' }],

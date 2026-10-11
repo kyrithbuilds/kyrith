@@ -17,6 +17,7 @@ function buildSchema() {
     logo,
     description: SITE_TAGLINE,
     email: SITE_EMAIL,
+    founder: { '@type': 'Person', name: 'Pooja Raval', jobTitle: 'Founder' },
     sameAs: [...WHATSAPP_NUMBERS.map((n) => n.href)],
     // sameAs: [LINKEDIN_URL, ...WHATSAPP_NUMBERS.map((n) => n.href)],
     contactPoint: [

@@ -10,6 +10,10 @@
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # Pre-rendered pages: /services → services.html (written by scripts/prerender.mjs)
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L]
+
   # React Router (client-side routes) → SPA shell
   RewriteRule . /index.html [L]
 </IfModule>
