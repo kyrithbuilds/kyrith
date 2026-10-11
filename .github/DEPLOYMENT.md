@@ -35,7 +35,7 @@ This document describes how **kyrithbuilds.com** is built, deployed, verified, r
 | Layer | Technology | Deployed path |
 |-------|------------|---------------|
 | **Frontend** | React 19, Vite 8, Tailwind 4 (SPA) | `public_html/` (contents of `dist/`) |
-| **Contact API** | PHP (`backend/api/contact.php`, SendGrid) | `public_html/api/` |
+| **Contact API** | PHP (`backend/api/contact.php`, Resend) | `public_html/api/` |
 | **Admin panel** | PHP 8 (`admin/`) | `public_html/admin.kyrithbuilds.com/` |
 | **Routing** | Apache `.htaccess` (SPA fallback) | `public_html/.htaccess`, `public_html/api/.htaccess` |
 | **Secrets (email)** | `config.local.php` on server only | `public_html/api/config.local.php` |
@@ -192,7 +192,7 @@ If upload succeeds but health checks fail, the workflow exits with a warning —
 
 **Protected on server** (excluded from mirror / never in CI bundle):
 
-- `public_html/api/config.local.php` — SendGrid and mail settings  
+- `public_html/api/config.local.php` — Resend and mail settings  
 - `public_html/admin/` — unused/legacy path; still excluded from `--delete`  
 - `public_html/admin.kyrithbuilds.com/` — live admin subdomain document root  
 - `.env`, `.env.*`  
@@ -294,7 +294,7 @@ Full admin deploy notes: [docs/ADMIN-DEPLOYMENT.md](../docs/ADMIN-DEPLOYMENT.md)
 | Check | Action |
 |-------|--------|
 | `config.local.php` on server | Must exist under `public_html/api/` (not deployed by CI) |
-| SendGrid key | Valid in `config.local.php` |
+| Resend key | Valid in `config.local.php` |
 | API reachable | `curl https://kyrithbuilds.com/api/contact.php` (expect JSON) |
 
 ### Site updated in wrong folder

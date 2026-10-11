@@ -17,7 +17,7 @@ if ($method === 'GET') {
     if ($cfgOk) {
         /** @var array<string, mixed> $probe */
         $probe = require $cfgPath;
-        $k = preg_replace('/\s+/', '', (string) ($probe['sendgrid_api_key'] ?? ''));
+        $k = preg_replace('/\s+/', '', (string) ($probe['resend_api_key'] ?? ''));
         $keySet = strlen($k) > 10;
     }
     echo json_encode([
@@ -25,7 +25,7 @@ if ($method === 'GET') {
         'service' => 'contact',
         'curl' => function_exists('curl_init'),
         'config_file_readable' => $cfgOk,
-        'sendgrid_api_key_configured' => $keySet,
+        'resend_api_key_configured' => $keySet,
         'hint' => 'POST JSON {name,email,message} to send mail. If curl is false or config is false, fix PHP/hosting first.',
     ]);
     exit;
@@ -49,18 +49,17 @@ $config = require $configPath;
 
 if (!function_exists('curl_init')) {
     http_response_code(503);
-    echo json_encode(['error' => 'This server PHP build has no cURL (needed for SendGrid).']);
+    echo json_encode(['error' => 'This server PHP build has no cURL (needed for Resend).']);
     exit;
 }
 
-$apiKey = preg_replace('/\s+/', '', (string) ($config['sendgrid_api_key'] ?? ''));
+$apiKey = preg_replace('/\s+/', '', (string) ($config['resend_api_key'] ?? ''));
 $to = trim((string) ($config['mail_to'] ?? ''));
 $from = trim((string) ($config['mail_from'] ?? ''));
 $fromName = trim((string) ($config['mail_from_name'] ?? 'Website'));
 $visitorReplyTo = !empty($config['visitor_reply_to']);
-$templateId = trim((string) ($config['sendgrid_template_id'] ?? ''));
 
-if ($apiKey === '' || $to === '' || $from === '' || $templateId === '') {
+if ($apiKey === '' || $to === '' || $from === '') {
     http_response_code(503);
     echo json_encode(['error' => 'Mail configuration incomplete.']);
     exit;
@@ -98,41 +97,73 @@ if (strlen($message) < 10 || strlen($message) > 10000) {
     exit;
 }
 
-$fromBlock = ['email' => $from];
-if ($fromName !== '') {
-    $fromBlock['name'] = $fromName;
-}
+$esc = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+// Header values must never contain line breaks.
+$oneLine = static fn (string $v): string => trim((string) preg_replace('/\s+/', ' ', $v));
 
-$templateData = [
-    'name'     => $name,
-    'email'    => $email,
-    'message'  => $message,
-];
+// UTF-8 safe truncate without requiring mbstring.
+$clip = static fn (string $v, int $n): string => preg_match('/^.{0,' . $n . '}/su', $v, $m) ? $m[0] : $v;
+
+$received = (new DateTimeImmutable('now', new DateTimeZone('Asia/Kolkata')))->format('D, j M Y \a\t g:i A') . ' IST';
+
+$details = ['Name' => $name, 'Email' => $email];
 if ($company !== '') {
-    $templateData['company'] = $company;
+    $details['Company'] = $company;
 }
 if ($timeline !== '') {
-    $templateData['timeline'] = $timeline;
+    $details['Timeline'] = $timeline;
 }
 
-$personalization = [
-    'to'                  => [['email' => $to]],
-    'dynamic_template_data' => $templateData,
-];
+$rowsHtml = '';
+$text = "New enquiry from the KyrithBuilds website\n\n";
+foreach ($details as $label => $value) {
+    $display = $esc($value);
+    if ($label === 'Email') {
+        $display = '<a href="mailto:' . $display . '" style="color:#4172F4;text-decoration:none">' . $display . '</a>';
+    }
+    $rowsHtml .= '<tr>'
+        . '<td style="padding:10px 0;width:100px;font-size:12px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:#6b7a90;vertical-align:top;border-bottom:1px solid #eef1f6">' . $label . '</td>'
+        . '<td style="padding:10px 0;font-size:15px;color:#021D41;vertical-align:top;border-bottom:1px solid #eef1f6">' . $display . '</td>'
+        . '</tr>';
+    $text .= $label . ': ' . $value . "\n";
+}
+$text .= "\nMessage:\n" . $message . "\n\nReceived: " . $received . "\nReply to this email to respond to " . $name . ".\n";
+
+$mailtoHref = 'mailto:' . rawurlencode($email) . '?subject=' . rawurlencode('Re: your enquiry to KyrithBuilds');
+
+$html = '<!doctype html><html><body style="margin:0;padding:0;background:#f0f4fc">'
+    . '<div style="display:none;max-height:0;overflow:hidden;opacity:0">' . $esc($name . ': ' . $clip($oneLine($message), 90)) . '</div>'
+    . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4fc;padding:24px 12px"><tr><td align="center">'
+    . '<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;font-family:Segoe UI,Helvetica,Arial,sans-serif">'
+    . '<tr><td style="background:#021D41;padding:24px 28px">'
+    . '<div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8fb0ff;font-weight:bold">KyrithBuilds</div>'
+    . '<div style="font-size:22px;font-weight:bold;color:#ffffff;margin-top:6px">New website enquiry</div>'
+    . '</td></tr>'
+    . '<tr><td style="padding:24px 28px 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $rowsHtml . '</table></td></tr>'
+    . '<tr><td style="padding:16px 28px 8px">'
+    . '<div style="font-size:12px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:#6b7a90;margin-bottom:8px">Message</div>'
+    . '<div style="background:#f5f8ff;border-left:4px solid #4172F4;border-radius:6px;padding:14px 16px;font-size:15px;line-height:1.6;color:#021D41;white-space:pre-wrap">' . $esc($message) . '</div>'
+    . '</td></tr>'
+    . '<tr><td style="padding:20px 28px 28px"><a href="' . $esc($mailtoHref) . '" style="display:inline-block;background:#4172F4;color:#ffffff;text-decoration:none;font-weight:bold;font-size:14px;padding:12px 22px;border-radius:8px">Reply to ' . $esc($oneLine($name)) . '</a></td></tr>'
+    . '<tr><td style="background:#f5f8ff;padding:14px 28px;font-size:12px;color:#6b7a90">Received ' . $esc($received) . ' via the contact form on kyrithbuilds.com</td></tr>'
+    . '</table></td></tr></table></body></html>';
+
+$subject = 'New enquiry from ' . $oneLine($name);
+if ($company !== '') {
+    $subject .= ' (' . $oneLine($company) . ')';
+}
+$subject = $clip($subject, 120);
 
 $payload = [
-    'personalizations' => [$personalization],
-    'from'             => $fromBlock,
-    'template_id'      => $templateId,
+    'from'    => $fromName !== '' ? $oneLine($fromName) . ' <' . $from . '>' : $from,
+    'to'      => [$to],
+    'subject' => $subject,
+    'html'    => $html,
+    'text'    => $text,
 ];
 
-// Visitor Reply-To often breaks SendGrid unless that address is verified; keep off by default.
 if ($visitorReplyTo) {
-    $replyBlock = ['email' => $email];
-    if ($name !== '') {
-        $replyBlock['name'] = $name;
-    }
-    $payload['reply_to'] = $replyBlock;
+    $payload['reply_to'] = $email;
 }
 
 $jsonFlags = JSON_UNESCAPED_UNICODE;
@@ -146,7 +177,7 @@ if ($jsonBody === false) {
     exit;
 }
 
-$ch = curl_init('https://api.sendgrid.com/v3/mail/send');
+$ch = curl_init('https://api.resend.com/emails');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
     CURLOPT_HTTPHEADER => [
@@ -156,7 +187,7 @@ curl_setopt_array($ch, [
     CURLOPT_POSTFIELDS => $jsonBody,
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 30,
-    // Some networks/hosts break IPv6 to SendGrid
+    // Some networks/hosts break IPv6
     CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
 ]);
 
@@ -175,7 +206,7 @@ if ($curlErr !== '') {
     if (stripos($curlErr, 'SSL') !== false || stripos($curlErr, 'certificate') !== false) {
         $hint = ' SSL/certificate problem (common on Windows PHP: set curl.cainfo in php.ini to a current cacert.pem).';
     }
-    echo json_encode(['error' => 'Could not reach SendGrid.' . $hint]);
+    echo json_encode(['error' => 'Could not reach Resend.' . $hint]);
     exit;
 }
 
@@ -184,20 +215,15 @@ if ($httpCode >= 200 && $httpCode < 300) {
     exit;
 }
 
-$detail = 'SendGrid rejected the request (HTTP ' . $httpCode . ').';
+$detail = 'Resend rejected the request (HTTP ' . $httpCode . ').';
 if ($responseBody !== '') {
     $decoded = json_decode($responseBody, true);
-    if (is_array($decoded) && isset($decoded['errors']) && is_array($decoded['errors'])) {
-        $first = $decoded['errors'][0] ?? null;
-        if (is_array($first) && isset($first['message'])) {
-            $detail = (string) $first['message'];
-        }
-    } elseif ($httpCode === 401 || $httpCode === 403) {
-        $detail = 'SendGrid refused the API key (check the key is active and has Mail Send).';
+    if (is_array($decoded) && isset($decoded['message'])) {
+        $detail = (string) $decoded['message'];
     }
 }
 
-// Use 502 only for upstream/network issues; SendGrid client errors are 400-series for clarity.
+// Use 502 only for upstream/network issues; Resend client errors are 400-series for clarity.
 if ($httpCode >= 400 && $httpCode < 500) {
     http_response_code($httpCode);
 } else {

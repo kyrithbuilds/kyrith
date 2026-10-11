@@ -24,7 +24,7 @@ const outZip = join(root, 'kyrithbuilds-upload.zip')
 const apiFiles = [
   { file: 'contact.php', required: true },
   { file: '.htaccess', required: true },
-  { file: 'config.local.php', required: true, note: 'SendGrid — required for contact form email' },
+  { file: 'config.local.php', required: true, note: 'Resend — required for contact form email' },
 ]
 
 function addDirRecursive(archive, dir, zipPath = '') {
@@ -70,7 +70,7 @@ if (missing.length > 0) {
   if (missing.some((m) => m.file === 'config.local.php')) {
     console.error('\nFor email on production, copy:')
     console.error('  backend/api/config.local.example.php → backend/api/config.local.php')
-    console.error('Then add your SendGrid API key and mail settings.')
+    console.error('Then add your Resend API key and mail settings.')
   }
   process.exit(1)
 }
@@ -144,5 +144,5 @@ for (const { file, note } of apiFiles) {
 console.log('  UPLOAD-INSTRUCTIONS.txt')
 console.log('')
 console.log('Upload to public_html and extract. This zip includes api/config.local.php for email.')
-console.log('Keep the zip private — it contains your SendGrid configuration.')
+console.log('Keep the zip private — it contains your Resend configuration.')
 console.log('')

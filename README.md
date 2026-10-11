@@ -28,7 +28,7 @@ Output: `dist/` — upload contents to your host’s web root when you deploy.
 
 The production build calls **`/api/contact.php`** on the **same domain** only.
 
-1. Ensure **`backend/api/config.local.php`** exists locally (copy from `config.local.example.php`, add SendGrid key). This file is gitignored but is **bundled into the zip** for email on the server.
+1. Ensure **`backend/api/config.local.php`** exists locally (copy from `config.local.example.php`, add Resend key). This file is gitignored but is **bundled into the zip** for email on the server.
 2. Run **`npm run pack-upload`** → creates **`kyrithbuilds-upload.zip`** (replaces any old zip).
 3. cPanel **File Manager** → **`public_html`** → **Upload** the zip → **Extract** (overwrite when prompted).
 4. Confirm after extract:
