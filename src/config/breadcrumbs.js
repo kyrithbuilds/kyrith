@@ -13,6 +13,11 @@ export const PAGE_BREADCRUMBS = {
     { name: 'Services', path: '/services' },
     { name: 'Bubble Developer', path: '/bubble-developer' },
   ],
+  '/mvp-development': [
+    HOME,
+    { name: 'Services', path: '/services' },
+    { name: 'MVP Development', path: '/mvp-development' },
+  ],
   '/about': [HOME, { name: 'About Us', path: '/about' }],
   '/contact': [HOME, { name: 'Contact', path: '/contact' }],
   '/privacy': [HOME, { name: 'Privacy Policy', path: '/privacy' }],

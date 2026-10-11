@@ -8,8 +8,10 @@ const SCRIPT_ID = 'kyrithbuilds-service-schema'
  * Injects Service JSON-LD for a single service landing page.
  * @param {string} path - Route path (e.g. /bubble-developer)
  * @param {string} description - Same text as the page meta description
+ * @param {string} name - Service name
+ * @param {string} serviceType - Service type
  */
-export default function ServiceStructuredData({ path, description }) {
+export default function ServiceStructuredData({ path, description, name, serviceType }) {
   useEffect(() => {
     const base = SITE_URL.replace(/\/$/, '')
     const telephone = `+${WHATSAPP_PRIMARY.href.replace(/\D/g, '')}`
@@ -17,8 +19,8 @@ export default function ServiceStructuredData({ path, description }) {
       '@context': 'https://schema.org',
       '@type': 'Service',
       '@id': `${base}${path}#service`,
-      name: 'Bubble developer for MVPs',
-      serviceType: 'Bubble.io MVP development',
+      name,
+      serviceType,
       description,
       url: `${base}${path}`,
       areaServed: 'Worldwide',
@@ -55,7 +57,7 @@ export default function ServiceStructuredData({ path, description }) {
     return () => {
       script?.remove()
     }
-  }, [path, description])
+  }, [path, description, name, serviceType])
 
   return null
 }

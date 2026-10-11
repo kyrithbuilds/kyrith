@@ -63,6 +63,11 @@ export default function Footer() {
                   Bubble Developer
                 </NavLink>
               </li>
+              <li>
+                <NavLink to="/mvp-development" className={footerNavLinkClass}>
+                  MVP Development
+                </NavLink>
+              </li>
             </ul>
           </div>
 

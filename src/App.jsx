@@ -4,7 +4,7 @@ import ScrollToTop from './components/ScrollToTop'
 import AppLayout from './layouts/AppLayout'
 import Home from './pages/Home'
 import Services from './pages/Services'
-import BubbleDeveloper from './pages/BubbleDeveloper'
+import ServicePage from './pages/ServicePage'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Privacy from './pages/Privacy'
@@ -19,7 +19,8 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/bubble-developer" element={<BubbleDeveloper />} />
+          <Route path="/bubble-developer" element={<ServicePage page="bubble-developer" />} />
+          <Route path="/mvp-development" element={<ServicePage page="mvp-development" />} />
           <Route path="/about" element={<About />} />
           <Route path="/about-us" element={<Navigate to="/about" replace />} />
           <Route path="/contact" element={<Contact />} />

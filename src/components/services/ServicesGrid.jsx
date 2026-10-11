@@ -80,7 +80,10 @@ const services = [
     chips: ['MVPs', 'Bubble.io', 'Webflow', 'Internal Apps'],
     icon: IconBlocks,
     featured: true,
-    link: { to: '/bubble-developer', label: 'Hire a Bubble developer' },
+    links: [
+      { to: '/bubble-developer', label: 'Hire a Bubble developer' },
+      { to: '/mvp-development', label: 'MVP development services' },
+    ],
   },
   {
     title: 'Automation & Integrations',
@@ -102,7 +105,7 @@ const services = [
   },
 ]
 
-function ServiceCard({ title, description, chips, icon, featured = false, link }) {
+function ServiceCard({ title, description, chips, icon, featured = false, links }) {
   return (
     <article
       className={`group relative flex h-full flex-col rounded-xl border p-7 shadow-card transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_16px_40px_-14px_rgba(65,114,244,0.28),0_4px_16px_-4px_rgba(2,29,65,0.08)] sm:p-8 ${
@@ -129,10 +132,16 @@ function ServiceCard({ title, description, chips, icon, featured = false, link }
         {title}
       </h3>
       <p className="mt-2.5 text-sm leading-relaxed text-textSecondary">{description}</p>
-      {link ? (
-        <Link to={link.to} className="mt-3 text-sm font-medium text-secondary underline-offset-2 hover:underline">
-          {link.label} →
-        </Link>
+      {links ? (
+        <ul className="mt-3 flex flex-col gap-1.5">
+          {links.map(({ to, label }) => (
+            <li key={to}>
+              <Link to={to} className="text-sm font-medium text-secondary underline-offset-2 hover:underline">
+                {label} →
+              </Link>
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       <ul className="mt-6 flex flex-wrap gap-2 sm:mt-7">

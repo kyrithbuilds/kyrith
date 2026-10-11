@@ -20,11 +20,17 @@ export const PAGE_SEO = {
       'Explore KyrithBuilds services: custom software, web apps, Bubble and no-code MVPs, workflow automations, integrations, Shopify builds, and ongoing support.',
     path: '/services',
   },
-  bubbleDeveloper: {
+  'bubble-developer': {
     title: 'Bubble Developer for MVPs in Weeks | KyrithBuilds',
     description:
       'Hire a Bubble developer to launch your MVP in 3 to 6 weeks. Remote-first, serving clients worldwide. Front end, backend and privacy policies included.',
     path: '/bubble-developer',
+  },
+  'mvp-development': {
+    title: 'MVP Development Services in Weeks | KyrithBuilds',
+    description:
+      'MVP development services for founders and small teams. Core features only, live in 3 to 6 weeks, built remote-first for clients worldwide.',
+    path: '/mvp-development',
   },
   about: {
     title: 'About KyrithBuilds | Software Built for Real Operations',

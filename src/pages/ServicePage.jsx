@@ -8,7 +8,7 @@ import Container from '../components/ui/Container'
 import Reveal from '../components/ui/Reveal'
 import Section from '../components/ui/Section'
 import { primaryLinkClass } from '../components/ui/linkButtons'
-import { BUBBLE_DEV } from '../config/bubbleDeveloper'
+import { SERVICE_PAGES } from '../config/servicePages'
 import { CTA } from '../config/analytics'
 import { PAGE_SEO } from '../config/site'
 
@@ -45,21 +45,27 @@ function Inline({ text }) {
 
 const bodyClass = 'mt-4 text-base leading-relaxed text-textSecondary'
 
-export default function BubbleDeveloper() {
-  const seo = PAGE_SEO.bubbleDeveloper
-  const { h1, intro, cta, who, ctaEnd, table, sections } = BUBBLE_DEV
+export default function ServicePage({ page }) {
+  const { content, serviceName, serviceType } = SERVICE_PAGES[page]
+  const seo = PAGE_SEO[page]
+  const { h1, intro, cta, who, ctaEnd, sections } = content
   const faqs = sections.map(({ question, answer }) => ({ question, answer }))
 
   return (
     <main id="main-content" className="flex flex-1 flex-col">
       <PageSEO title={seo.title} description={seo.description} path={seo.path} />
       <BreadcrumbStructuredData path={seo.path} />
-      <ServiceStructuredData path={seo.path} description={seo.description} />
+      <ServiceStructuredData
+        path={seo.path}
+        description={seo.description}
+        name={serviceName}
+        serviceType={serviceType}
+      />
       <FaqPageStructuredData path={seo.path} faqs={faqs} />
 
       <section
         className="relative overflow-hidden bg-gradient-to-b from-[#eef4ff] via-[#f4f8ff] to-[#f8faff] py-14 sm:py-20 lg:py-24"
-        aria-labelledby="bubble-dev-heading"
+        aria-labelledby="service-page-heading"
       >
         <img
           src={blobPng}
@@ -73,7 +79,7 @@ export default function BubbleDeveloper() {
         <Container className="relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <h1
-              id="bubble-dev-heading"
+              id="service-page-heading"
               className="animate-hero-fade-up text-[1.65rem] font-bold leading-[1.14] tracking-tight text-primary sm:text-4xl lg:text-[2.65rem]"
             >
               {h1}
@@ -86,7 +92,7 @@ export default function BubbleDeveloper() {
                 to="/contact"
                 className={primaryLinkClass}
                 data-track-cta={CTA.START_PROJECT}
-                data-track-location="bubble_developer_hero"
+                data-track-location={`${page}_hero`}
               >
                 Start Your Project
               </Link>
@@ -99,17 +105,17 @@ export default function BubbleDeveloper() {
         </Container>
       </section>
 
-      {sections.map(({ question, answer, detail, table: hasTable }, index) => (
+      {sections.map(({ question, answer, detail, table }, index) => (
         <Section
           key={question}
           variant={index % 2 === 0 ? 'default' : 'muted'}
-          aria-labelledby={`bubble-dev-h2-${index}`}
+          aria-labelledby={`service-page-h2-${index}`}
         >
           <Container>
             <Reveal>
               <div className="mx-auto max-w-3xl">
                 <h2
-                  id={`bubble-dev-h2-${index}`}
+                  id={`service-page-h2-${index}`}
                   className="text-2xl font-bold tracking-tight text-primary sm:text-3xl"
                 >
                   {question}
@@ -122,12 +128,12 @@ export default function BubbleDeveloper() {
                     <Inline text={detail} />
                   </p>
                 ) : null}
-                {hasTable ? (
+                {table ? (
                   <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-white">
-                    <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
+                    <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
                       <thead>
                         <tr className="border-b border-border bg-section">
-                          {table[0].map((heading) => (
+                          {table.head.map((heading) => (
                             <th key={heading} className="px-4 py-3 font-semibold text-primary">
                               {heading}
                             </th>
@@ -135,7 +141,7 @@ export default function BubbleDeveloper() {
                         </tr>
                       </thead>
                       <tbody>
-                        {table.slice(1).map((row) => (
+                        {table.rows.map((row) => (
                           <tr key={row[0]} className="border-b border-border last:border-0">
                             {row.map((cell, cellIndex) => (
                               <td
